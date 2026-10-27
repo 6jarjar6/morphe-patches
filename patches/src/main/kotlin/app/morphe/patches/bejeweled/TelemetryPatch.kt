@@ -1,8 +1,14 @@
 package app.morphe.patches.bejeweled
 
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.removeInstruction
+import app.morphe.patcher.methodCall
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.findFreeRegister
+import app.morphe.patcher.util.matchAllMethodIndicesForEach
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.returnEarly
 import app.morphe.patches.shared.Constants
 
@@ -28,13 +34,19 @@ import app.morphe.patches.shared.Constants
  *  5. Unity Ads — all four `UnityAds.initialize` overloads early-return; the SDK never
  *     boots (cuts its mediation fan-out to Meta/Instagram/Amazon/Kinesis).
  *
+ *  6. GluAnalytics privacy flags (formerly the standalone Privacy-disabled patch)
+ *     - GluAnalytics reads `usageSharing` and `internalTargetedAds` from
+ *       SharedPreferences with a default of TRUE (i.e. opt-out). Those reads are
+ *       rewritten to `false`, forcing usage-sharing off and personalised/targeted
+ *       ads off regardless of device or server configuration.
+ *
  * Each kill is a tracking-only neutralisation: the game keeps running, and no
  * gameplay-dependent path (store catalog, purchases, age-gate) is touched.
  */
 @Suppress("SpellCheckingInspection")
 val bejeweledTelemetryDisabled = bytecodePatch(
     name = "Telemetry-disabled",
-    description = "Stops Nimble/Synergy, Firebase, GLUAnalytics, Facebook and Unity telemetry.",
+    description = "Stops Nimble/Synergy, Firebase, GLUAnalytics (incl. privacy flags), Facebook and Unity telemetry.",
     default = true
 ) {
     compatibleWith(Constants.BEJEWELED_COMPATIBILITY)
@@ -131,6 +143,33 @@ val bejeweledTelemetryDisabled = bytecodePatch(
         AbstractKinesisRecorderSubmitAllFingerprint.method.returnEarly()
         AwsBasicCognitoIdentityProviderRefreshFingerprint.method.returnNullAtStart()
         GluAnalyticsUnsyncLogDefaultSegmentationFingerprint.method.returnEarly()
+
+        // ------------------------------------------------------------------
+        // PHASE 5 — GluAnalytics privacy flags (merged from the former
+        // standalone Privacy-disabled patch). GluAnalytics reads
+        // `usageSharing` and `internalTargetedAds` from SharedPreferences
+        // defaulting to TRUE (opt-out). Rewrite every such read to `false`:
+        // usage-sharing off, personalised/targeted ads off, regardless of
+        // device or server configuration. Only <init> and getCustomProperties
+        // are considered (other methods read unrelated keys via getBoolean).
+        // ------------------------------------------------------------------
+        val gb = methodCall("Landroid/content/SharedPreferences;", "getBoolean")
+        val sites = mutableListOf<Pair<MutableMethod, Int>>()
+        gb.matchAllMethodIndicesForEach(false) { idx ->
+            if (this.name == "<init>" || this.name == "getCustomProperties") {
+                sites.add(this to idx)
+            }
+        }
+        if (sites.isEmpty()) {
+            error("No SharedPreferences.getBoolean privacy reads found in GluAnalytics")
+        }
+        // Descending index order: removing later sites never shifts earlier
+        // sites' captured indices.
+        for ((method, idx) in sites.sortedByDescending { it.second }) {
+            val resultReg = moveResultRegister(method, idx)
+            method.replaceInstruction(idx, "const/4 v$resultReg, 0x0")
+            method.removeInstruction(idx + 1)
+        }
     }
 }
 
@@ -147,4 +186,19 @@ private fun app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.returnNullA
     val reg = this.findFreeRegister(0)
     this.addInstruction(0, "const/4 v$reg, 0")
     this.addInstruction(1, "return-object v$reg")
+}
+
+/**
+ * The register that receives a SharedPreferences.getBoolean result: the operand of the
+ * `move-result` instruction immediately following the invoke.
+ */
+private fun moveResultRegister(method: MutableMethod, invokeIndex: Int): Int {
+    val mr = method.getInstruction(invokeIndex + 1)
+    for (md in (mr as Any).javaClass.declaredMethods) {
+        if (md.name == "getRegisterA" && md.parameterCount == 0) {
+            md.isAccessible = true
+            return md.invoke(mr) as Int
+        }
+    }
+    throw IllegalStateException("move-result at ${invokeIndex + 1} has no register: ${mr.javaClass}")
 }
