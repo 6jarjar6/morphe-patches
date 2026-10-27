@@ -72,12 +72,11 @@ jobs:
           payload = {
             "created_at": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S"),
             "description": (
-              "Bundle of patches for Bejeweled 3 (com.ea.gp.bej3, 4.0.0 / 3.9.1).\n"
+              "Bundle of patches for Bejeweled Classic (com.ea.gp.bej3, 4.0.0).\n"
               "- Ad-free: removes advertisement placements.\n"
               "- Crash-guard: injects null guards across the Java glue layer.\n"
-              "- Privacy-disabled: disables telemetry consent tracking.\n"
-              "- Telemetry-disabled: suppresses analytics/tracking endpoints and severs the "
-              "Kinesis/Cognito chain before AWS-HTTP consumers.\n"
+              "- Telemetry-disabled: suppresses analytics/telemetry endpoints and severs the "
+              "tracking/Kinesis-Cognito chain, including consent/opt-in flags.\n"
               "Developed with AI assistance; each patch statically verified at release time."
             ),
             "download_url": f"https://github.com/6jarjar6/morphe-patches/releases/download/v{version}/patches-{version}.mpp",
