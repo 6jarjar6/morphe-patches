@@ -15,8 +15,23 @@ Click here to add these patches to Morphe: https://morphe.software/add-source?gi
 ## Patches list
 
 <!-- PATCHES_START -->
+> **[v1.0.0-dev.1](https://github.com/6jarjar6/morphe-patches/releases/tag/v1.0.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;3 patches total
+<details open>
+<summary>📦 Bejeweled Classic&nbsp;&nbsp;•&nbsp;&nbsp;3 patches</summary>
+<br>
 
-<!-- Do not modify this section by hand. The patch list is generated when release.yml creates a new release. -->
+**🎯 Supported versions:**
+
+| 4.0.0 | 3.9.1 |
+| :---: | :---: |
+
+| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
+|----------|----------------|-----------|
+| [Ad-free](#ad-free) | Removes ads. Rewarded ads still grant their reward without playing. |  |
+| [Privacy-disabled](#privacy-disabled) | Forces the internal 'usage sharing' and 'targeted ads' privacy flags off. |  |
+| [Telemetry-disabled](#telemetry-disabled) | Stops Nimble/Synergy telemetry from being posted to the server. |  |
+
+</details>
 
 <!-- PATCHES_END -->
 
