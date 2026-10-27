@@ -130,3 +130,4 @@ node_modules/
 local.properties
 # Internal analysis/working tree — never publish
 src/
+!patches/src/

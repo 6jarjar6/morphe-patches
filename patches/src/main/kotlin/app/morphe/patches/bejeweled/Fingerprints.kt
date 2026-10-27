@@ -298,3 +298,35 @@ val gluAnalyticsDoLogOverloads: List<Fingerprint> = listOf(
     GluAnalyticsDoLogEventLongFingerprint,
     GluAnalyticsDoLogEventBigDecimalFingerprint
 )
+
+/**
+ * Crashing-funnel fingerprint.
+ *
+ * com.glu.plugins.gluanalytics.GluAnalytics is the wrapper (extends Handler) that
+ * pumps analytics lifecycle/session/user events off the worker thread. Several of its
+ * `handleMessage` branches dereference `this.mCallback` (an IAnalyticsCallback) to
+ * forward onInit / onUpdateSessionId / onUserIdChanged / onDestroy.
+ *
+ * The callback is set only by the legacy `GluAnalytics.init(IAnalyticsCallback)`,
+ * which is NEVER called — the game's factory wires the modern `enablePinpoint`
+ * path instead. So `mCallback` is structurally always null, and any of these
+ * branches NPEs as soon as its message arrives. This is a latent vendor bug,
+ * exposed once the earlier startup crash (ad funnel) was fixed and the app began
+ * surviving long enough to pump these messages.
+ */
+/**
+ * GluAnalytics.handleMessage(Message) -> void
+ *
+ * Central dispatcher. We null-guard every `mCallback` dereference here so a
+ * message that would NPE is dropped harmlessly instead of crashing the process.
+ */
+object GluAnalyticsHandleMessageFingerprint : Fingerprint(
+    definingClass = "Lcom/glu/plugins/gluanalytics/GluAnalytics;",
+    name = "handleMessage",
+    isStatic = false,
+    returnType = "V",
+    parameters = listOf("Landroid/os/Message;"),
+    filters = listOf(
+        string("GLUANALYTICS.MESSAGE_START_SESSION")
+    )
+)
