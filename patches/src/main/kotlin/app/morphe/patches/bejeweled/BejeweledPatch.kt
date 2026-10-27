@@ -39,15 +39,17 @@ val bejeweledAdFree = bytecodePatch(
         val showMethod = AdvertisingImplShowFingerprint.method
 
         // We need 7 free registers:
-        //   listener, status, nullReg, event, typeStr, typeBool, reward
+        //   listener (held across the whole body), then the 6 contiguous
+        //   registers (ev + r1..r5) needed to assemble the PlacementEvent
+        //   constructor via invoke-direct/range (this + 5 args = 6 regs).
         showMethod.getFreeRegisterProvider(0, 7).let { rp ->
             val listener = rp.getFreeRegister()
-            val status = rp.getFreeRegister()
-            val nullReg = rp.getFreeRegister()
-            val event = rp.getFreeRegister()
-            val typeStr = rp.getFreeRegister()
-            val typeBool = rp.getFreeRegister()
-            val reward = rp.getFreeRegister()
+            val ev = rp.getFreeRegister()
+            val r1 = rp.getFreeRegister()
+            val r2 = rp.getFreeRegister()
+            val r3 = rp.getFreeRegister()
+            val r4 = rp.getFreeRegister()
+            val r5 = rp.getFreeRegister()
 
             showMethod.addInstructionsWithLabels(
                 0,
@@ -57,26 +59,33 @@ val bejeweledAdFree = bytecodePatch(
                     move-result-object v$listener
                     check-cast v$listener, Lcsdk/gluads/IAdvertisingListener;
 
-                    const-string v$status, "showStarted"
-                    const/4 v$nullReg, 0
-                    new-instance v$event, Lcsdk/gluads/PlacementEvent;
-                    invoke-direct { p1, p2, v$status, v$nullReg, p3 }, Lcsdk/gluads/PlacementEvent;-><init>(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;Ljava/util/Map;)V
-                    invoke-interface { v$listener }, Lcsdk/gluads/IAdvertisingListener;->onPlacementEvent(Lcsdk/gluads/PlacementEvent;)V
+                    new-instance v$ev, Lcsdk/gluads/PlacementEvent;
+                    move-object v$r1, p1
+                    move-object v$r2, p2
+                    const-string v$r3, "showStarted"
+                    const/4 v$r4, 0
+                    move-object v$r5, p3
+                    invoke-direct/range { v$ev .. v$r5 }, Lcsdk/gluads/PlacementEvent;-><init>(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;Ljava/util/Map;)V
+                    invoke-interface { v$listener, v$ev }, Lcsdk/gluads/IAdvertisingListener;->onPlacementEvent(Lcsdk/gluads/PlacementEvent;)V
 
-                    const-string v$typeStr, "rewardedInterstitial"
-                    invoke-virtual { p1, v$typeStr }, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
-                    move-result v$typeBool
-                    if-eqz v$typeBool, :skipReward
+                    const-string v$r1, "rewardedInterstitial"
+                    invoke-virtual { p1, v$r1 }, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+                    move-result v$r2
+                    if-eqz v$r2, :skipReward
                     invoke-virtual { p0, p1, p2 }, Lcsdk/gluads/impl/AdvertisingImpl;->getReward(Ljava/lang/String;Ljava/lang/String;)Lcsdk/gluads/Reward;
-                    move-result-object v$reward
-                    if-eqz v$reward, :skipReward
-                    invoke-interface { v$listener }, Lcsdk/gluads/IAdvertisingListener;->onRewardReceived(Lcsdk/gluads/Reward;)V
+                    move-result-object v$r3
+                    if-eqz v$r3, :skipReward
+                    invoke-interface { v$listener, v$r3 }, Lcsdk/gluads/IAdvertisingListener;->onRewardReceived(Lcsdk/gluads/Reward;)V
                     :skipReward
 
-                    const-string v$status, "showFinished"
-                    new-instance v$event, Lcsdk/gluads/PlacementEvent;
-                    invoke-direct { p1, p2, v$status, v$nullReg, p3 }, Lcsdk/gluads/PlacementEvent;-><init>(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;Ljava/util/Map;)V
-                    invoke-interface { v$listener }, Lcsdk/gluads/IAdvertisingListener;->onPlacementEvent(Lcsdk/gluads/PlacementEvent;)V
+                    new-instance v$ev, Lcsdk/gluads/PlacementEvent;
+                    move-object v$r1, p1
+                    move-object v$r2, p2
+                    const-string v$r3, "showFinished"
+                    const/4 v$r4, 0
+                    move-object v$r5, p3
+                    invoke-direct/range { v$ev .. v$r5 }, Lcsdk/gluads/PlacementEvent;-><init>(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;Ljava/util/Map;)V
+                    invoke-interface { v$listener, v$ev }, Lcsdk/gluads/IAdvertisingListener;->onPlacementEvent(Lcsdk/gluads/PlacementEvent;)V
 
                     goto :finish
                 """,
