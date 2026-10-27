@@ -74,6 +74,35 @@ val bejeweledTelemetryDisabled = bytecodePatch(
         // 6. Unity Ads — SDK never boots (cuts the mediation fan-out).
         // ------------------------------------------------------------------
         unityAdsInitOverloads.forEach { it.method.returnEarly() }
+
+        // ------------------------------------------------------------------
+        // PHASE 3 — the residual channels seen after Phase-2.
+        // ------------------------------------------------------------------
+
+        // AWS SDK — Kinesis / Cognito / STS (the single HTTP egress).
+        AmazonHttpClientExecuteFingerprint.method.returnNullAtStart()
+
+        // Unity Ads SDK internals (facade-kill misses the backing layers).
+        UnityAdsImplementationInitFingerprint.method.returnEarly()
+        UnityAdsSDKInitializeFingerprint.method.returnNullAtStart()
+        UnityAdsSDKInitializeDefaultFingerprint.method.returnNullAtStart()
+        CommonGatewayClientExecuteRequestFingerprint.method.returnNullAtStart()
+        CommonGatewayClientExecuteWithRetryFingerprint.method.returnNullAtStart()
+
+        // Nimble tracking — event intake + post path + reachability pings.
+        TrackingWranglerLogEventFingerprint.method.returnEarly()
+        NimbleTrackingSynergyImplPostFingerprint.method.returnEarly()
+        NetworkImplDetectFingerprint.method.returnEarly()
+
+        // Firebase Crashlytics — bootstrap fetch + settings URL.
+        RemoteSettingsFetcherDoConfigFetchFingerprint.method.returnNullAtStart()
+        RemoteSettingsFetcherSettingsUrlFingerprint.method.returnNullAtStart()
+
+        // GLUAnalytics hub transports — geo publish, session-id, CCS putData.
+        CacheServicePutDataFingerprint.method.returnEarly()
+        GluAnalyticsUnsyncLogGeoFingerprint.method.returnEarly()
+        GluAnalyticsUnsyncSessionIDFingerprint.method.returnEarly()
+        GluAnalyticsSendDataToCacheServiceFingerprint.method.returnEarly()
     }
 }
 
