@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "patches": [
     {
       "name": "Ad-free",
@@ -57,35 +57,8 @@
       "options": []
     },
     {
-      "name": "Privacy-disabled",
-      "description": "Forces the internal 'usage sharing' and 'targeted ads' privacy flags off.",
-      "default": true,
-      "category": null,
-      "compatiblePackages": [
-        {
-          "packageName": "com.ea.gp.bej3",
-          "name": "Bejeweled Classic",
-          "description": null,
-          "apkFileType": "APKM",
-          "appIconColor": "#00A550",
-          "signatures": null,
-          "formFactor": "MOBILE",
-          "targets": [
-            {
-              "version": "4.0.0",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
       "name": "Telemetry-disabled",
-      "description": "Stops Nimble/Synergy, Firebase, GLUAnalytics, Facebook and Unity telemetry.",
+      "description": "Stops Nimble/Synergy, Firebase, GLUAnalytics (incl. privacy flags), Facebook and Unity telemetry.",
       "default": true,
       "category": null,
       "compatiblePackages": [
