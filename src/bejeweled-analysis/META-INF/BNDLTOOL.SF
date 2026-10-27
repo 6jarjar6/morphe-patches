@@ -1,0 +1,44 @@
+Signature-Version: 1.0
+Created-By: 1.0 (Android)
+SHA1-Digest-Manifest: 3s0HuLZe71D5Q9GX/vlR05z17RQ=
+X-Android-APK-Signed: 2, 3
+
+Name: AndroidManifest.xml
+SHA1-Digest: 2+QLu4Zy+cX+dPrpiprKEPl/qfI=
+
+Name: lib/arm64-v8a/libBejeweled3.so
+SHA1-Digest: ti0JqzY2inAhZyUIcNbISa9lqAA=
+
+Name: lib/arm64-v8a/libNimble.so
+SHA1-Digest: 29AoIvcAYgMWciPNZ3bflqRqDrw=
+
+Name: lib/arm64-v8a/libapplovin-native-crash-reporter.so
+SHA1-Digest: xkbTy9b8BkTzxf1FG6SmXyPXgjI=
+
+Name: lib/arm64-v8a/libc++_shared.so
+SHA1-Digest: svmc1aYOHxIva4hWiA+aivXfZHw=
+
+Name: lib/arm64-v8a/libcrashlytics-common.so
+SHA1-Digest: /0sg/d8ciRV2sB9vxVcPJf3ZFpk=
+
+Name: lib/arm64-v8a/libcrashlytics-handler.so
+SHA1-Digest: AC7r44HYWgzUS1fGFT/Yo9gam7A=
+
+Name: lib/arm64-v8a/libcrashlytics-trampoline.so
+SHA1-Digest: c2ictF95Z+hljd131p457dpncpw=
+
+Name: lib/arm64-v8a/libcrashlytics.so
+SHA1-Digest: 6pTmXJWJe3d3M+s144Lh0CUk46g=
+
+Name: lib/arm64-v8a/libdatastore_shared_counter.so
+SHA1-Digest: 2QroeYLrBWw5bbYB9vLjZMnYZKg=
+
+Name: lib/arm64-v8a/libgluads_shared.so
+SHA1-Digest: 6Y2BDh7z0oB1HClwUuhHiEBVtn0=
+
+Name: lib/arm64-v8a/libtapjoy.so
+SHA1-Digest: I2Qp19je0lARuy91rEFSWp+R+Zg=
+
+Name: stamp-cert-sha256
+SHA1-Digest: Bs40BvDZ1xrbgQrPTD2x5w/NfHQ=
+

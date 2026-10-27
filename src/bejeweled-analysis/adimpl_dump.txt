@@ -1,0 +1,859 @@
+# class Lcsdk/gluads/impl/AdvertisingImpl;
+--- method: <init> ret=V access=65537
+invoke-direct reg=1 ref=Ljava/lang/Object;-><init>()V [rt=METHOD]
+iput-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mContext:Landroid/content/Context; [rt=FIELD]
+new-instance  ref=Ljava/util/concurrent/atomic/AtomicReference; [rt=TYPE]
+sget-object  ref=Lcsdk/gluads/impl/NullAdvertisingListener;->INSTANCE:Lcsdk/gluads/IAdvertisingListener; [rt=FIELD]
+invoke-direct reg=2 ref=Ljava/util/concurrent/atomic/AtomicReference;-><init>(Ljava/lang/Object;)V [rt=METHOD]
+iput-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->listener:Ljava/util/concurrent/atomic/AtomicReference; [rt=FIELD]
+invoke-static reg=0 ref=Lcsdk/gluads/util/Common;->createMap()Ljava/util/Map; [rt=METHOD]
+move-result-object 
+invoke-static reg=1 ref=Ljava/util/Collections;->synchronizedMap(Ljava/util/Map;)Ljava/util/Map; [rt=METHOD]
+move-result-object 
+iput-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mInitHandlers:Ljava/util/Map; [rt=FIELD]
+invoke-static reg=0 ref=Lcsdk/gluads/util/Common;->createMap()Ljava/util/Map; [rt=METHOD]
+move-result-object 
+invoke-static reg=1 ref=Ljava/util/Collections;->synchronizedMap(Ljava/util/Map;)Ljava/util/Map; [rt=METHOD]
+move-result-object 
+iput-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mPrivacyStatusUpdateHandlers:Ljava/util/Map; [rt=FIELD]
+invoke-static reg=0 ref=Lcsdk/gluads/util/Common;->createMap()Ljava/util/Map; [rt=METHOD]
+move-result-object 
+invoke-static reg=1 ref=Ljava/util/Collections;->synchronizedMap(Ljava/util/Map;)Ljava/util/Map; [rt=METHOD]
+move-result-object 
+iput-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mPrivacyStages:Ljava/util/Map; [rt=FIELD]
+const/4 
+move 
+sget-object  ref=Lcsdk/gluads/Consts;->SDK_ARRAY_AD_NETWORKS:[Ljava/lang/String; [rt=FIELD]
+array-length 
+if-ge 
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mPrivacyStages:Ljava/util/Map; [rt=FIELD]
+sget-object  ref=Lcsdk/gluads/Consts;->SDK_ARRAY_AD_NETWORKS:[Ljava/lang/String; [rt=FIELD]
+aget-object 
+const-string  ref=uninitialzed [rt=STRING]
+invoke-interface reg=3 ref=Ljava/util/Map;->put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object; [rt=METHOD]
+add-int/lit8 
+goto 
+iput-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mBroadcastManager:Lcsdk/gluads/util/broadcastmanager/IBroadcastManger; [rt=FIELD]
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mPrivacyStages:Ljava/util/Map; [rt=FIELD]
+invoke-interface reg=1 ref=Ljava/util/Map;->size()I [rt=METHOD]
+move-result 
+invoke-static reg=3 ref=Lcsdk/gluads/impl/AdsSubscriber;->subscribe(Lcsdk/gluads/util/broadcastmanager/IBroadcastManger;Lcsdk/gluads/IAdvertisingListener;I)Lcsdk/gluads/impl/AdsSubscriber; [rt=METHOD]
+move-result-object 
+iput-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mSubscriber:Lcsdk/gluads/impl/AdsSubscriber; [rt=FIELD]
+iput-boolean  ref=Lcsdk/gluads/impl/AdvertisingImpl;->hasInitRun:Z [rt=FIELD]
+return-void 
+--- method: containsKey ret=Z access=2
+if-eqz 
+invoke-interface reg=2 ref=Ljava/util/Map;->containsKey(Ljava/lang/Object;)Z [rt=METHOD]
+move-result 
+if-eqz 
+const/4 
+return 
+const/4 
+return 
+--- method: dropPlacementEventExtraIfNotRequired ret=Lcsdk/gluads/PlacementEvent; access=2
+iget-object  ref=Lcsdk/gluads/PlacementEvent;->extra:Ljava/util/Map; [rt=FIELD]
+if-nez 
+return-object 
+new-instance  ref=Lcsdk/gluads/PlacementEvent; [rt=TYPE]
+iget-object  ref=Lcsdk/gluads/PlacementEvent;->advertisementType:Ljava/lang/String; [rt=FIELD]
+iget-object  ref=Lcsdk/gluads/PlacementEvent;->placement:Ljava/lang/String; [rt=FIELD]
+iget-object  ref=Lcsdk/gluads/PlacementEvent;->status:Ljava/lang/String; [rt=FIELD]
+iget-object  ref=Lcsdk/gluads/PlacementEvent;->error:Ljava/lang/Throwable; [rt=FIELD]
+const/4 
+iget-wide  ref=Lcsdk/gluads/PlacementEvent;->textureInfo:J [rt=FIELD]
+invoke-direct/range reg=8 ref=Lcsdk/gluads/PlacementEvent;-><init>(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;Ljava/util/Map;J)V [rt=METHOD]
+return-object 
+--- method: isPrivacyPolicyUpdate ret=Z access=2
+const-string  ref=gdprApplies [rt=STRING]
+invoke-direct reg=3 ref=Lcsdk/gluads/impl/AdvertisingImpl;->containsKey(Ljava/util/Map;Ljava/lang/String;)Z [rt=METHOD]
+move-result 
+if-eqz 
+const-string  ref=ccpaApplies [rt=STRING]
+invoke-direct reg=3 ref=Lcsdk/gluads/impl/AdvertisingImpl;->containsKey(Ljava/util/Map;Ljava/lang/String;)Z [rt=METHOD]
+move-result 
+if-eqz 
+const-string  ref=underAgeUser [rt=STRING]
+invoke-direct reg=3 ref=Lcsdk/gluads/impl/AdvertisingImpl;->containsKey(Ljava/util/Map;Ljava/lang/String;)Z [rt=METHOD]
+move-result 
+if-eqz 
+const-string  ref=teen [rt=STRING]
+invoke-direct reg=3 ref=Lcsdk/gluads/impl/AdvertisingImpl;->containsKey(Ljava/util/Map;Ljava/lang/String;)Z [rt=METHOD]
+move-result 
+if-eqz 
+const/4 
+return 
+const/4 
+return 
+--- method: putIfUserAgeIsPresent ret=Ljava/util/Map; access=2
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->userAge:Ljava/lang/Integer; [rt=FIELD]
+if-eqz 
+invoke-virtual reg=1 ref=Ljava/lang/Integer;->intValue()I [rt=METHOD]
+move-result 
+if-gez 
+goto 
+invoke-static reg=0 ref=Lcsdk/gluads/util/Common;->createMap()Ljava/util/Map; [rt=METHOD]
+move-result-object 
+if-eqz 
+invoke-interface reg=2 ref=Ljava/util/Map;->putAll(Ljava/util/Map;)V [rt=METHOD]
+sget-object  ref=Ljava/util/Locale;->ENGLISH:Ljava/util/Locale; [rt=FIELD]
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->userAge:Ljava/lang/Integer; [rt=FIELD]
+filled-new-array reg=1 ref=[Ljava/lang/Object; [rt=TYPE]
+move-result-object 
+const-string  ref=m_age:%d [rt=STRING]
+invoke-static reg=3 ref=Ljava/lang/String;->format(Ljava/util/Locale;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String; [rt=METHOD]
+move-result-object 
+const-string  ref=keyword_age [rt=STRING]
+invoke-interface reg=3 ref=Ljava/util/Map;->put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object; [rt=METHOD]
+return-object 
+return-object 
+--- method: updatePrivacyStatus ret=V access=2
+move-object/from16 
+const-string  ref=gdprApplies [rt=STRING]
+invoke-static reg=2 ref=Lcsdk/gluads/util/ConfigUtil;->getBoolean(Ljava/lang/Object;Ljava/lang/String;)Z [rt=METHOD]
+move-result 
+invoke-static reg=1 ref=Ljava/lang/Boolean;->valueOf(Z)Ljava/lang/Boolean; [rt=METHOD]
+move-result-object 
+const-string  ref=hasConsent [rt=STRING]
+invoke-static reg=2 ref=Lcsdk/gluads/util/ConfigUtil;->getBoolean(Ljava/lang/Object;Ljava/lang/String;)Z [rt=METHOD]
+move-result 
+invoke-static reg=1 ref=Ljava/lang/Boolean;->valueOf(Z)Ljava/lang/Boolean; [rt=METHOD]
+move-result-object 
+const-string  ref=ccpaApplies [rt=STRING]
+invoke-static reg=2 ref=Lcsdk/gluads/util/ConfigUtil;->getBoolean(Ljava/lang/Object;Ljava/lang/String;)Z [rt=METHOD]
+move-result 
+invoke-static reg=1 ref=Ljava/lang/Boolean;->valueOf(Z)Ljava/lang/Boolean; [rt=METHOD]
+move-result-object 
+const-string  ref=ccpaOptOut [rt=STRING]
+invoke-static reg=2 ref=Lcsdk/gluads/util/ConfigUtil;->getBoolean(Ljava/lang/Object;Ljava/lang/String;)Z [rt=METHOD]
+move-result 
+invoke-static reg=1 ref=Ljava/lang/Boolean;->valueOf(Z)Ljava/lang/Boolean; [rt=METHOD]
+move-result-object 
+const-string  ref=underAgeUser [rt=STRING]
+invoke-static reg=2 ref=Lcsdk/gluads/util/ConfigUtil;->getBoolean(Ljava/lang/Object;Ljava/lang/String;)Z [rt=METHOD]
+move-result 
+invoke-static reg=1 ref=Ljava/lang/Boolean;->valueOf(Z)Ljava/lang/Boolean; [rt=METHOD]
+move-result-object 
+const-string  ref=teen [rt=STRING]
+invoke-static reg=2 ref=Lcsdk/gluads/util/ConfigUtil;->getBoolean(Ljava/lang/Object;Ljava/lang/String;)Z [rt=METHOD]
+move-result 
+invoke-static reg=1 ref=Ljava/lang/Boolean;->valueOf(Z)Ljava/lang/Boolean; [rt=METHOD]
+move-result-object 
+const-string  ref=userID [rt=STRING]
+invoke-static reg=2 ref=Lcsdk/gluads/util/ConfigUtil;->getString(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/String; [rt=METHOD]
+move-result-object 
+new-instance  ref=Lcsdk/gluads/PrivacyStatus; [rt=TYPE]
+invoke-virtual reg=1 ref=Ljava/lang/Boolean;->booleanValue()Z [rt=METHOD]
+move-result 
+invoke-virtual reg=1 ref=Ljava/lang/Boolean;->booleanValue()Z [rt=METHOD]
+move-result 
+invoke-virtual reg=1 ref=Ljava/lang/Boolean;->booleanValue()Z [rt=METHOD]
+move-result 
+invoke-virtual reg=1 ref=Ljava/lang/Boolean;->booleanValue()Z [rt=METHOD]
+move-result 
+invoke-virtual reg=1 ref=Ljava/lang/Boolean;->booleanValue()Z [rt=METHOD]
+move-result 
+invoke-virtual reg=1 ref=Ljava/lang/Boolean;->booleanValue()Z [rt=METHOD]
+move-result 
+invoke-direct/range reg=8 ref=Lcsdk/gluads/PrivacyStatus;-><init>(ZZZZZZLjava/lang/String;)V [rt=METHOD]
+move-object/from16 
+invoke-virtual reg=2 ref=Lcsdk/gluads/impl/AdvertisingImpl;->internal_updatePrivacyStatus(Lcsdk/gluads/PrivacyStatus;)V [rt=METHOD]
+return-void 
+--- method: destroy ret=V access=1
+const/4 
+iput-boolean  ref=Lcsdk/gluads/impl/AdvertisingImpl;->hasInitRun:Z [rt=FIELD]
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mBroadcastManager:Lcsdk/gluads/util/broadcastmanager/IBroadcastManger; [rt=FIELD]
+invoke-interface reg=1 ref=Lcsdk/gluads/util/broadcastmanager/IBroadcastManger;->unsubscribe()V [rt=METHOD]
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->listener:Ljava/util/concurrent/atomic/AtomicReference; [rt=FIELD]
+sget-object  ref=Lcsdk/gluads/impl/NullAdvertisingListener;->INSTANCE:Lcsdk/gluads/IAdvertisingListener; [rt=FIELD]
+invoke-virtual reg=2 ref=Ljava/util/concurrent/atomic/AtomicReference;->set(Ljava/lang/Object;)V [rt=METHOD]
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->handlers:Ljava/util/Map; [rt=FIELD]
+invoke-interface reg=1 ref=Ljava/util/Map;->values()Ljava/util/Collection; [rt=METHOD]
+move-result-object 
+invoke-interface reg=1 ref=Ljava/util/Collection;->iterator()Ljava/util/Iterator; [rt=METHOD]
+move-result-object 
+invoke-interface reg=1 ref=Ljava/util/Iterator;->hasNext()Z [rt=METHOD]
+move-result 
+if-eqz 
+invoke-interface reg=1 ref=Ljava/util/Iterator;->next()Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+check-cast  ref=Lcsdk/gluads/IAdvertising; [rt=TYPE]
+invoke-interface reg=1 ref=Lcsdk/gluads/IAdvertising;->destroy()V [rt=METHOD]
+goto 
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->handlers:Ljava/util/Map; [rt=FIELD]
+invoke-interface reg=1 ref=Ljava/util/Map;->clear()V [rt=METHOD]
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mOnDestroy:Ljava/lang/Runnable; [rt=FIELD]
+if-eqz 
+invoke-interface reg=1 ref=Ljava/lang/Runnable;->run()V [rt=METHOD]
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mGluActivityLifecycleCallbacks:Lcsdk/gluads/util/GluActivityLifecycleCallbacks; [rt=FIELD]
+invoke-virtual reg=1 ref=Lcsdk/gluads/util/GluActivityLifecycleCallbacks;->destroy()V [rt=METHOD]
+const/4 
+iput-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mGluActivityLifecycleCallbacks:Lcsdk/gluads/util/GluActivityLifecycleCallbacks; [rt=FIELD]
+iput-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mContext:Landroid/content/Context; [rt=FIELD]
+return-void 
+--- method: discard ret=V access=1
+if-eqz 
+const/4 
+goto 
+const/4 
+const-string  ref=advertisementType can't be null. [rt=STRING]
+invoke-static reg=2 ref=Lcsdk/gluads/util/Common;->require(ZLjava/lang/String;)V [rt=METHOD]
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->handlers:Ljava/util/Map; [rt=FIELD]
+invoke-interface reg=2 ref=Ljava/util/Map;->get(Ljava/lang/Object;)Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+check-cast  ref=Lcsdk/gluads/IAdvertising; [rt=TYPE]
+if-eqz 
+invoke-interface reg=4 ref=Lcsdk/gluads/IAdvertising;->discard(Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)V [rt=METHOD]
+return-void 
+--- method: getComponentHandlers ret=Ljava/util/Map; access=1
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->handlers:Ljava/util/Map; [rt=FIELD]
+return-object 
+--- method: getReward ret=Lcsdk/gluads/Reward; access=1
+const/4 
+const/4 
+if-eqz 
+move 
+goto 
+move 
+const-string  ref=advertisementType can't be null. [rt=STRING]
+invoke-static reg=2 ref=Lcsdk/gluads/util/Common;->require(ZLjava/lang/String;)V [rt=METHOD]
+if-eqz 
+goto 
+move 
+const-string  ref=placement can't be null. [rt=STRING]
+invoke-static reg=2 ref=Lcsdk/gluads/util/Common;->require(ZLjava/lang/String;)V [rt=METHOD]
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->handlers:Ljava/util/Map; [rt=FIELD]
+invoke-interface reg=2 ref=Ljava/util/Map;->get(Ljava/lang/Object;)Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+check-cast  ref=Lcsdk/gluads/IAdvertising; [rt=TYPE]
+if-eqz 
+invoke-interface reg=3 ref=Lcsdk/gluads/IAdvertising;->getReward(Ljava/lang/String;Ljava/lang/String;)Lcsdk/gluads/Reward; [rt=METHOD]
+move-result-object 
+return-object 
+const/4 
+return-object 
+--- method: handleOnInit ret=V access=1
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mOnInit:Ljava/lang/Runnable; [rt=FIELD]
+if-eqz 
+iget-boolean  ref=Lcsdk/gluads/impl/AdvertisingImpl;->hasInitRun:Z [rt=FIELD]
+if-nez 
+invoke-interface reg=1 ref=Ljava/lang/Runnable;->run()V [rt=METHOD]
+const/4 
+iput-boolean  ref=Lcsdk/gluads/impl/AdvertisingImpl;->hasInitRun:Z [rt=FIELD]
+return-void 
+--- method: initialize ret=V access=1
+iput-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mOnDestroy:Ljava/lang/Runnable; [rt=FIELD]
+iput-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mEventHandler:Lcsdk/gluads/eventbus/GluAdsEventHandler; [rt=FIELD]
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->handlers:Ljava/util/Map; [rt=FIELD]
+invoke-interface reg=1 ref=Ljava/util/Map;->values()Ljava/util/Collection; [rt=METHOD]
+move-result-object 
+invoke-interface reg=1 ref=Ljava/util/Collection;->iterator()Ljava/util/Iterator; [rt=METHOD]
+move-result-object 
+invoke-interface reg=1 ref=Ljava/util/Iterator;->hasNext()Z [rt=METHOD]
+move-result 
+if-eqz 
+invoke-interface reg=1 ref=Ljava/util/Iterator;->next()Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+check-cast  ref=Lcsdk/gluads/IAdvertising; [rt=TYPE]
+invoke-interface reg=2 ref=Lcsdk/gluads/IAdvertising;->setAdvertisingListener(Lcsdk/gluads/IAdvertisingListener;)V [rt=METHOD]
+goto 
+iput-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mOnInit:Ljava/lang/Runnable; [rt=FIELD]
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mSubscriber:Lcsdk/gluads/impl/AdsSubscriber; [rt=FIELD]
+if-eqz 
+invoke-virtual reg=1 ref=Lcsdk/gluads/impl/AdsSubscriber;->isPrivacyReady()Z [rt=METHOD]
+move-result 
+if-eqz 
+iget-boolean  ref=Lcsdk/gluads/impl/AdvertisingImpl;->hasInitRun:Z [rt=FIELD]
+if-nez 
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mOnInit:Ljava/lang/Runnable; [rt=FIELD]
+invoke-interface reg=1 ref=Ljava/lang/Runnable;->run()V [rt=METHOD]
+const/4 
+iput-boolean  ref=Lcsdk/gluads/impl/AdvertisingImpl;->hasInitRun:Z [rt=FIELD]
+new-instance  ref=Lcsdk/gluads/util/GluActivityLifecycleCallbacks; [rt=TYPE]
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mContext:Landroid/content/Context; [rt=FIELD]
+new-instance  ref=Lcsdk/gluads/impl/AdvertisingImpl$1; [rt=TYPE]
+invoke-direct reg=2 ref=Lcsdk/gluads/impl/AdvertisingImpl$1;-><init>(Lcsdk/gluads/impl/AdvertisingImpl;)V [rt=METHOD]
+invoke-direct reg=3 ref=Lcsdk/gluads/util/GluActivityLifecycleCallbacks;-><init>(Landroid/content/Context;Lcsdk/gluads/util/IAction2;)V [rt=METHOD]
+iput-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mGluActivityLifecycleCallbacks:Lcsdk/gluads/util/GluActivityLifecycleCallbacks; [rt=FIELD]
+return-void 
+--- method: internal_onNewSession ret=V access=1
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->handlers:Ljava/util/Map; [rt=FIELD]
+invoke-interface reg=1 ref=Ljava/util/Map;->values()Ljava/util/Collection; [rt=METHOD]
+move-result-object 
+invoke-interface reg=1 ref=Ljava/util/Collection;->iterator()Ljava/util/Iterator; [rt=METHOD]
+move-result-object 
+invoke-interface reg=1 ref=Ljava/util/Iterator;->hasNext()Z [rt=METHOD]
+move-result 
+if-eqz 
+invoke-interface reg=1 ref=Ljava/util/Iterator;->next()Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+check-cast  ref=Lcsdk/gluads/IAdvertising; [rt=TYPE]
+invoke-interface reg=1 ref=Lcsdk/gluads/IAdvertising;->internal_onNewSession()V [rt=METHOD]
+goto 
+return-void 
+--- method: internal_setGemsData ret=V access=1
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->handlers:Ljava/util/Map; [rt=FIELD]
+invoke-interface reg=1 ref=Ljava/util/Map;->values()Ljava/util/Collection; [rt=METHOD]
+move-result-object 
+invoke-interface reg=1 ref=Ljava/util/Collection;->iterator()Ljava/util/Iterator; [rt=METHOD]
+move-result-object 
+invoke-interface reg=1 ref=Ljava/util/Iterator;->hasNext()Z [rt=METHOD]
+move-result 
+if-eqz 
+invoke-interface reg=1 ref=Ljava/util/Iterator;->next()Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+check-cast  ref=Lcsdk/gluads/IAdvertising; [rt=TYPE]
+invoke-interface reg=3 ref=Lcsdk/gluads/IAdvertising;->internal_setGemsData(Ljava/lang/String;Ljava/util/Map;)V [rt=METHOD]
+goto 
+return-void 
+--- method: internal_updateAdsFrequency ret=V access=1
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->handlers:Ljava/util/Map; [rt=FIELD]
+invoke-interface reg=1 ref=Ljava/util/Map;->values()Ljava/util/Collection; [rt=METHOD]
+move-result-object 
+invoke-interface reg=1 ref=Ljava/util/Collection;->iterator()Ljava/util/Iterator; [rt=METHOD]
+move-result-object 
+invoke-interface reg=1 ref=Ljava/util/Iterator;->hasNext()Z [rt=METHOD]
+move-result 
+if-eqz 
+invoke-interface reg=1 ref=Ljava/util/Iterator;->next()Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+check-cast  ref=Lcsdk/gluads/IAdvertising; [rt=TYPE]
+invoke-interface reg=2 ref=Lcsdk/gluads/IAdvertising;->internal_updateAdsFrequency(Ljava/util/Map;)V [rt=METHOD]
+goto 
+return-void 
+--- method: internal_updateCrossPromotion ret=V access=1
+const-string  ref=rewardedInterstitial [rt=STRING]
+invoke-static reg=2 ref=Landroid/text/TextUtils;->equals(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Z [rt=METHOD]
+move-result 
+if-nez 
+const-string  ref=interstitial [rt=STRING]
+invoke-static reg=2 ref=Landroid/text/TextUtils;->equals(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Z [rt=METHOD]
+move-result 
+if-nez 
+goto 
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->handlers:Ljava/util/Map; [rt=FIELD]
+invoke-interface reg=2 ref=Ljava/util/Map;->get(Ljava/lang/Object;)Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+check-cast  ref=Lcsdk/gluads/IAdvertising; [rt=TYPE]
+if-eqz 
+invoke-interface reg=4 ref=Lcsdk/gluads/IAdvertising;->internal_updateCrossPromotion(Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;)V [rt=METHOD]
+return-void 
+--- method: internal_updatePrivacyStatus ret=V access=1
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mPrivacyStages:Ljava/util/Map; [rt=FIELD]
+invoke-interface reg=1 ref=Ljava/util/Map;->size()I [rt=METHOD]
+move-result 
+mul-int/lit8 
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mPrivacyStages:Ljava/util/Map; [rt=FIELD]
+invoke-interface reg=1 ref=Ljava/util/Map;->entrySet()Ljava/util/Set; [rt=METHOD]
+move-result-object 
+invoke-interface reg=1 ref=Ljava/util/Set;->iterator()Ljava/util/Iterator; [rt=METHOD]
+move-result-object 
+const/4 
+const-string  ref= [rt=STRING]
+invoke-interface reg=1 ref=Ljava/util/Iterator;->hasNext()Z [rt=METHOD]
+move-result 
+if-eqz 
+invoke-interface reg=1 ref=Ljava/util/Iterator;->next()Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+check-cast  ref=Ljava/util/Map$Entry; [rt=TYPE]
+invoke-interface reg=1 ref=Ljava/util/Map$Entry;->getValue()Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+check-cast  ref=Ljava/lang/String; [rt=TYPE]
+const-string  ref=uninitialzed [rt=STRING]
+invoke-virtual reg=2 ref=Ljava/lang/String;->equals(Ljava/lang/Object;)Z [rt=METHOD]
+move-result 
+if-eqz 
+new-instance  ref=Ljava/lang/StringBuilder; [rt=TYPE]
+invoke-direct reg=1 ref=Ljava/lang/StringBuilder;-><init>()V [rt=METHOD]
+invoke-virtual reg=2 ref=Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder; [rt=METHOD]
+move-result-object 
+invoke-interface reg=1 ref=Ljava/util/Map$Entry;->getKey()Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+check-cast  ref=Ljava/lang/String; [rt=TYPE]
+invoke-virtual reg=2 ref=Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder; [rt=METHOD]
+move-result-object 
+const-string  ref= uninitialzed  [rt=STRING]
+invoke-virtual reg=2 ref=Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder; [rt=METHOD]
+move-result-object 
+invoke-virtual reg=1 ref=Ljava/lang/StringBuilder;->toString()Ljava/lang/String; [rt=METHOD]
+move-result-object 
+goto 
+const-string  ref=disabled [rt=STRING]
+invoke-virtual reg=2 ref=Ljava/lang/String;->equals(Ljava/lang/Object;)Z [rt=METHOD]
+move-result 
+if-nez 
+const-string  ref=unsupported [rt=STRING]
+invoke-virtual reg=2 ref=Ljava/lang/String;->equals(Ljava/lang/Object;)Z [rt=METHOD]
+move-result 
+if-eqz 
+goto 
+const-string  ref=started [rt=STRING]
+invoke-virtual reg=2 ref=Ljava/lang/String;->equals(Ljava/lang/Object;)Z [rt=METHOD]
+move-result 
+if-eqz 
+add-int/lit8 
+new-instance  ref=Ljava/lang/StringBuilder; [rt=TYPE]
+invoke-direct reg=1 ref=Ljava/lang/StringBuilder;-><init>()V [rt=METHOD]
+invoke-virtual reg=2 ref=Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder; [rt=METHOD]
+move-result-object 
+invoke-interface reg=1 ref=Ljava/util/Map$Entry;->getKey()Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+check-cast  ref=Ljava/lang/String; [rt=TYPE]
+invoke-virtual reg=2 ref=Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder; [rt=METHOD]
+move-result-object 
+const-string  ref= started  [rt=STRING]
+invoke-virtual reg=2 ref=Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder; [rt=METHOD]
+move-result-object 
+invoke-virtual reg=1 ref=Ljava/lang/StringBuilder;->toString()Ljava/lang/String; [rt=METHOD]
+move-result-object 
+goto 
+const-string  ref=added [rt=STRING]
+invoke-virtual reg=2 ref=Ljava/lang/String;->equals(Ljava/lang/Object;)Z [rt=METHOD]
+move-result 
+if-eqz 
+add-int/lit8 
+goto 
+add-int/lit8 
+goto 
+if-ne 
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mInitHandlers:Ljava/util/Map; [rt=FIELD]
+if-eqz 
+const/4 
+iput-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mInitHandlers:Ljava/util/Map; [rt=FIELD]
+invoke-interface reg=1 ref=Ljava/util/Map;->values()Ljava/util/Collection; [rt=METHOD]
+move-result-object 
+invoke-interface reg=1 ref=Ljava/util/Collection;->iterator()Ljava/util/Iterator; [rt=METHOD]
+move-result-object 
+invoke-interface reg=1 ref=Ljava/util/Iterator;->hasNext()Z [rt=METHOD]
+move-result 
+if-eqz 
+invoke-interface reg=1 ref=Ljava/util/Iterator;->next()Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+check-cast  ref=Lcsdk/gluads/util/IAction1; [rt=TYPE]
+invoke-interface reg=2 ref=Lcsdk/gluads/util/IAction1;->apply(Ljava/lang/Object;)V [rt=METHOD]
+goto 
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mPrivacyStatusUpdateHandlers:Ljava/util/Map; [rt=FIELD]
+invoke-interface reg=1 ref=Ljava/util/Map;->values()Ljava/util/Collection; [rt=METHOD]
+move-result-object 
+invoke-interface reg=1 ref=Ljava/util/Collection;->iterator()Ljava/util/Iterator; [rt=METHOD]
+move-result-object 
+invoke-interface reg=1 ref=Ljava/util/Iterator;->hasNext()Z [rt=METHOD]
+move-result 
+if-eqz 
+invoke-interface reg=1 ref=Ljava/util/Iterator;->next()Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+check-cast  ref=Lcsdk/gluads/util/IAction1; [rt=TYPE]
+if-eqz 
+invoke-interface reg=2 ref=Lcsdk/gluads/util/IAction1;->apply(Ljava/lang/Object;)V [rt=METHOD]
+goto 
+return-void 
+new-instance  ref=Ljava/lang/UnsupportedOperationException; [rt=TYPE]
+new-instance  ref=Ljava/lang/StringBuilder; [rt=TYPE]
+const-string  ref=Not all privacy status have been collected:  [rt=STRING]
+invoke-direct reg=2 ref=Ljava/lang/StringBuilder;-><init>(Ljava/lang/String;)V [rt=METHOD]
+invoke-virtual reg=2 ref=Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder; [rt=METHOD]
+move-result-object 
+invoke-virtual reg=1 ref=Ljava/lang/StringBuilder;->toString()Ljava/lang/String; [rt=METHOD]
+move-result-object 
+invoke-direct reg=2 ref=Ljava/lang/UnsupportedOperationException;-><init>(Ljava/lang/String;)V [rt=METHOD]
+throw 
+--- method: internal_updateRewardList ret=V access=1
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->handlers:Ljava/util/Map; [rt=FIELD]
+invoke-interface reg=1 ref=Ljava/util/Map;->values()Ljava/util/Collection; [rt=METHOD]
+move-result-object 
+invoke-interface reg=1 ref=Ljava/util/Collection;->iterator()Ljava/util/Iterator; [rt=METHOD]
+move-result-object 
+invoke-interface reg=1 ref=Ljava/util/Iterator;->hasNext()Z [rt=METHOD]
+move-result 
+if-eqz 
+invoke-interface reg=1 ref=Ljava/util/Iterator;->next()Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+check-cast  ref=Lcsdk/gluads/IAdvertising; [rt=TYPE]
+invoke-interface reg=2 ref=Lcsdk/gluads/IAdvertising;->internal_updateRewardList(Ljava/util/Map;)V [rt=METHOD]
+goto 
+return-void 
+--- method: isLoaded ret=Z access=1
+const/4 
+const/4 
+if-eqz 
+move 
+goto 
+move 
+const-string  ref=advertisementType can't be null. [rt=STRING]
+invoke-static reg=2 ref=Lcsdk/gluads/util/Common;->require(ZLjava/lang/String;)V [rt=METHOD]
+if-eqz 
+move 
+goto 
+move 
+const-string  ref=placement can't be null. [rt=STRING]
+invoke-static reg=2 ref=Lcsdk/gluads/util/Common;->require(ZLjava/lang/String;)V [rt=METHOD]
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->handlers:Ljava/util/Map; [rt=FIELD]
+invoke-interface reg=2 ref=Ljava/util/Map;->get(Ljava/lang/Object;)Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+check-cast  ref=Lcsdk/gluads/IAdvertising; [rt=TYPE]
+if-eqz 
+invoke-interface reg=4 ref=Lcsdk/gluads/IAdvertising;->isLoaded(Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)Z [rt=METHOD]
+move-result 
+if-eqz 
+return 
+return 
+--- method: load ret=V access=1
+const/4 
+const/4 
+if-eqz 
+move 
+goto 
+move 
+const-string  ref=advertisementType can't be null. [rt=STRING]
+invoke-static reg=2 ref=Lcsdk/gluads/util/Common;->require(ZLjava/lang/String;)V [rt=METHOD]
+if-eqz 
+goto 
+move 
+const-string  ref=placement can't be null. [rt=STRING]
+invoke-static reg=2 ref=Lcsdk/gluads/util/Common;->require(ZLjava/lang/String;)V [rt=METHOD]
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->handlers:Ljava/util/Map; [rt=FIELD]
+invoke-interface reg=2 ref=Ljava/util/Map;->get(Ljava/lang/Object;)Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+check-cast  ref=Lcsdk/gluads/IAdvertising; [rt=TYPE]
+if-eqz 
+invoke-direct reg=2 ref=Lcsdk/gluads/impl/AdvertisingImpl;->putIfUserAgeIsPresent(Ljava/util/Map;)Ljava/util/Map; [rt=METHOD]
+move-result-object 
+invoke-interface reg=4 ref=Lcsdk/gluads/IAdvertising;->load(Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)V [rt=METHOD]
+return-void 
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->listener:Ljava/util/concurrent/atomic/AtomicReference; [rt=FIELD]
+invoke-virtual reg=1 ref=Ljava/util/concurrent/atomic/AtomicReference;->get()Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+check-cast  ref=Lcsdk/gluads/IAdvertisingListener; [rt=TYPE]
+new-instance  ref=Lcsdk/gluads/PlacementEvent; [rt=TYPE]
+new-instance  ref=Ljava/lang/UnsupportedOperationException; [rt=TYPE]
+new-instance  ref=Ljava/lang/StringBuilder; [rt=TYPE]
+const-string  ref=Unknown advertisementType:  [rt=STRING]
+invoke-direct reg=2 ref=Ljava/lang/StringBuilder;-><init>(Ljava/lang/String;)V [rt=METHOD]
+invoke-virtual reg=2 ref=Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder; [rt=METHOD]
+move-result-object 
+const-string  ref=. [rt=STRING]
+invoke-virtual reg=2 ref=Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder; [rt=METHOD]
+move-result-object 
+invoke-virtual reg=1 ref=Ljava/lang/StringBuilder;->toString()Ljava/lang/String; [rt=METHOD]
+move-result-object 
+invoke-direct reg=2 ref=Ljava/lang/UnsupportedOperationException;-><init>(Ljava/lang/String;)V [rt=METHOD]
+const-string  ref=loadFinished [rt=STRING]
+move-object 
+move-object 
+move-object 
+invoke-direct/range reg=6 ref=Lcsdk/gluads/PlacementEvent;-><init>(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;Ljava/util/Map;)V [rt=METHOD]
+invoke-interface reg=2 ref=Lcsdk/gluads/IAdvertisingListener;->onPlacementEvent(Lcsdk/gluads/PlacementEvent;)V [rt=METHOD]
+return-void 
+--- method: onAdvertisementClick ret=V access=1
+const/4 
+const/4 
+if-eqz 
+move 
+goto 
+move 
+const-string  ref=advertisementType can't be null. [rt=STRING]
+invoke-static reg=2 ref=Lcsdk/gluads/util/Common;->require(ZLjava/lang/String;)V [rt=METHOD]
+if-eqz 
+goto 
+move 
+const-string  ref=identifier can't be null. [rt=STRING]
+invoke-static reg=2 ref=Lcsdk/gluads/util/Common;->require(ZLjava/lang/String;)V [rt=METHOD]
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->handlers:Ljava/util/Map; [rt=FIELD]
+invoke-interface reg=2 ref=Ljava/util/Map;->get(Ljava/lang/Object;)Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+check-cast  ref=Lcsdk/gluads/IAdvertising; [rt=TYPE]
+if-eqz 
+invoke-interface reg=4 ref=Lcsdk/gluads/IAdvertising;->onAdvertisementClick(Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)V [rt=METHOD]
+return-void 
+new-instance  ref=Ljava/lang/UnsupportedOperationException; [rt=TYPE]
+new-instance  ref=Ljava/lang/StringBuilder; [rt=TYPE]
+const-string  ref=Unknown advertisementType:  [rt=STRING]
+invoke-direct reg=2 ref=Ljava/lang/StringBuilder;-><init>(Ljava/lang/String;)V [rt=METHOD]
+invoke-virtual reg=2 ref=Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder; [rt=METHOD]
+move-result-object 
+const-string  ref=. [rt=STRING]
+invoke-virtual reg=2 ref=Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder; [rt=METHOD]
+move-result-object 
+invoke-virtual reg=1 ref=Ljava/lang/StringBuilder;->toString()Ljava/lang/String; [rt=METHOD]
+move-result-object 
+invoke-direct reg=2 ref=Ljava/lang/UnsupportedOperationException;-><init>(Ljava/lang/String;)V [rt=METHOD]
+throw 
+--- method: onAdvertisementImpression ret=V access=1
+const/4 
+const/4 
+if-eqz 
+move 
+goto 
+move 
+const-string  ref=advertisementType can't be null. [rt=STRING]
+invoke-static reg=2 ref=Lcsdk/gluads/util/Common;->require(ZLjava/lang/String;)V [rt=METHOD]
+if-eqz 
+goto 
+move 
+const-string  ref=identifier can't be null. [rt=STRING]
+invoke-static reg=2 ref=Lcsdk/gluads/util/Common;->require(ZLjava/lang/String;)V [rt=METHOD]
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->handlers:Ljava/util/Map; [rt=FIELD]
+invoke-interface reg=2 ref=Ljava/util/Map;->get(Ljava/lang/Object;)Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+check-cast  ref=Lcsdk/gluads/IAdvertising; [rt=TYPE]
+if-eqz 
+invoke-interface reg=4 ref=Lcsdk/gluads/IAdvertising;->onAdvertisementImpression(Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)V [rt=METHOD]
+return-void 
+new-instance  ref=Ljava/lang/UnsupportedOperationException; [rt=TYPE]
+new-instance  ref=Ljava/lang/StringBuilder; [rt=TYPE]
+const-string  ref=Unknown advertisementType:  [rt=STRING]
+invoke-direct reg=2 ref=Ljava/lang/StringBuilder;-><init>(Ljava/lang/String;)V [rt=METHOD]
+invoke-virtual reg=2 ref=Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder; [rt=METHOD]
+move-result-object 
+const-string  ref=. [rt=STRING]
+invoke-virtual reg=2 ref=Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder; [rt=METHOD]
+move-result-object 
+invoke-virtual reg=1 ref=Ljava/lang/StringBuilder;->toString()Ljava/lang/String; [rt=METHOD]
+move-result-object 
+invoke-direct reg=2 ref=Ljava/lang/UnsupportedOperationException;-><init>(Ljava/lang/String;)V [rt=METHOD]
+throw 
+--- method: onCustomActionReceived ret=V access=1
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->listener:Ljava/util/concurrent/atomic/AtomicReference; [rt=FIELD]
+invoke-virtual reg=1 ref=Ljava/util/concurrent/atomic/AtomicReference;->get()Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+check-cast  ref=Lcsdk/gluads/IAdvertisingListener; [rt=TYPE]
+invoke-interface reg=2 ref=Lcsdk/gluads/IAdvertisingListener;->onCustomActionReceived(Lcsdk/gluads/CustomAction;)V [rt=METHOD]
+return-void 
+--- method: onPause ret=V access=1
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->handlers:Ljava/util/Map; [rt=FIELD]
+invoke-interface reg=1 ref=Ljava/util/Map;->values()Ljava/util/Collection; [rt=METHOD]
+move-result-object 
+invoke-interface reg=1 ref=Ljava/util/Collection;->iterator()Ljava/util/Iterator; [rt=METHOD]
+move-result-object 
+invoke-interface reg=1 ref=Ljava/util/Iterator;->hasNext()Z [rt=METHOD]
+move-result 
+if-eqz 
+invoke-interface reg=1 ref=Ljava/util/Iterator;->next()Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+check-cast  ref=Lcsdk/gluads/IAdvertising; [rt=TYPE]
+invoke-interface reg=1 ref=Lcsdk/gluads/IAdvertising;->onPause()V [rt=METHOD]
+goto 
+return-void 
+--- method: onPlacementEvent ret=V access=1
+iget-object  ref=Lcsdk/gluads/PlacementEvent;->status:Ljava/lang/String; [rt=FIELD]
+const-string  ref=showStarted [rt=STRING]
+invoke-static reg=2 ref=Landroid/text/TextUtils;->equals(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Z [rt=METHOD]
+move-result 
+if-eqz 
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mSubscriber:Lcsdk/gluads/impl/AdsSubscriber; [rt=FIELD]
+invoke-virtual reg=1 ref=Lcsdk/gluads/impl/AdsSubscriber;->GetServedByAdNetworkAndClear()Ljava/lang/String; [rt=METHOD]
+move-result-object 
+invoke-static reg=1 ref=Landroid/text/TextUtils;->isEmpty(Ljava/lang/CharSequence;)Z [rt=METHOD]
+move-result 
+if-nez 
+iget-object  ref=Lcsdk/gluads/PlacementEvent;->extra:Ljava/util/Map; [rt=FIELD]
+if-eqz 
+iget-object  ref=Lcsdk/gluads/PlacementEvent;->extra:Ljava/util/Map; [rt=FIELD]
+const-string  ref=servedByAdNetwork [rt=STRING]
+invoke-interface reg=3 ref=Ljava/util/Map;->put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object; [rt=METHOD]
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mEventHandler:Lcsdk/gluads/eventbus/GluAdsEventHandler; [rt=FIELD]
+invoke-virtual reg=2 ref=Lcsdk/gluads/eventbus/GluAdsEventHandler;->onPlacementEvent(Lcsdk/gluads/PlacementEvent;)V [rt=METHOD]
+iget-object  ref=Lcsdk/gluads/PlacementEvent;->status:Ljava/lang/String; [rt=FIELD]
+const-string  ref=showAttempt [rt=STRING]
+invoke-static reg=2 ref=Landroid/text/TextUtils;->equals(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Z [rt=METHOD]
+move-result 
+if-nez 
+iget-object  ref=Lcsdk/gluads/PlacementEvent;->status:Ljava/lang/String; [rt=FIELD]
+const-string  ref=singularAdRevenueReport [rt=STRING]
+invoke-static reg=2 ref=Landroid/text/TextUtils;->equals(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Z [rt=METHOD]
+move-result 
+if-eqz 
+goto 
+iget-object  ref=Lcsdk/gluads/PlacementEvent;->status:Ljava/lang/String; [rt=FIELD]
+invoke-static reg=2 ref=Landroid/text/TextUtils;->equals(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Z [rt=METHOD]
+move-result 
+if-eqz 
+iget-object  ref=Lcsdk/gluads/PlacementEvent;->advertisementType:Ljava/lang/String; [rt=FIELD]
+const-string  ref=banner [rt=STRING]
+invoke-static reg=2 ref=Landroid/text/TextUtils;->equals(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Z [rt=METHOD]
+move-result 
+if-eqz 
+iget-object  ref=Lcsdk/gluads/PlacementEvent;->extra:Ljava/util/Map; [rt=FIELD]
+const-string  ref=publisher_revenue [rt=STRING]
+invoke-static reg=2 ref=Lcsdk/gluads/util/Common;->get(Ljava/util/Map;Ljava/lang/Object;)Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+if-nez 
+iget-object  ref=Lcsdk/gluads/PlacementEvent;->placement:Ljava/lang/String; [rt=FIELD]
+if-eqz 
+iget-object  ref=Lcsdk/gluads/PlacementEvent;->advertisementType:Ljava/lang/String; [rt=FIELD]
+const-string  ref=nativeAd [rt=STRING]
+if-ne 
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->listener:Ljava/util/concurrent/atomic/AtomicReference; [rt=FIELD]
+invoke-virtual reg=1 ref=Ljava/util/concurrent/atomic/AtomicReference;->get()Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+check-cast  ref=Lcsdk/gluads/IAdvertisingListener; [rt=TYPE]
+invoke-interface reg=2 ref=Lcsdk/gluads/IAdvertisingListener;->onPlacementEvent(Lcsdk/gluads/PlacementEvent;)V [rt=METHOD]
+return-void 
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->listener:Ljava/util/concurrent/atomic/AtomicReference; [rt=FIELD]
+invoke-virtual reg=1 ref=Ljava/util/concurrent/atomic/AtomicReference;->get()Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+check-cast  ref=Lcsdk/gluads/IAdvertisingListener; [rt=TYPE]
+invoke-direct reg=2 ref=Lcsdk/gluads/impl/AdvertisingImpl;->dropPlacementEventExtraIfNotRequired(Lcsdk/gluads/PlacementEvent;)Lcsdk/gluads/PlacementEvent; [rt=METHOD]
+move-result-object 
+invoke-interface reg=2 ref=Lcsdk/gluads/IAdvertisingListener;->onPlacementEvent(Lcsdk/gluads/PlacementEvent;)V [rt=METHOD]
+return-void 
+--- method: onResume ret=V access=1
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->handlers:Ljava/util/Map; [rt=FIELD]
+invoke-interface reg=1 ref=Ljava/util/Map;->values()Ljava/util/Collection; [rt=METHOD]
+move-result-object 
+invoke-interface reg=1 ref=Ljava/util/Collection;->iterator()Ljava/util/Iterator; [rt=METHOD]
+move-result-object 
+invoke-interface reg=1 ref=Ljava/util/Iterator;->hasNext()Z [rt=METHOD]
+move-result 
+if-eqz 
+invoke-interface reg=1 ref=Ljava/util/Iterator;->next()Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+check-cast  ref=Lcsdk/gluads/IAdvertising; [rt=TYPE]
+invoke-interface reg=1 ref=Lcsdk/gluads/IAdvertising;->onResume()V [rt=METHOD]
+goto 
+return-void 
+--- method: onRewardReceived ret=V access=1
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mEventHandler:Lcsdk/gluads/eventbus/GluAdsEventHandler; [rt=FIELD]
+invoke-virtual reg=2 ref=Lcsdk/gluads/eventbus/GluAdsEventHandler;->onRewardReceived(Lcsdk/gluads/Reward;)V [rt=METHOD]
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->listener:Ljava/util/concurrent/atomic/AtomicReference; [rt=FIELD]
+invoke-virtual reg=1 ref=Ljava/util/concurrent/atomic/AtomicReference;->get()Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+check-cast  ref=Lcsdk/gluads/IAdvertisingListener; [rt=TYPE]
+invoke-interface reg=2 ref=Lcsdk/gluads/IAdvertisingListener;->onRewardReceived(Lcsdk/gluads/Reward;)V [rt=METHOD]
+return-void 
+--- method: rewireListeners ret=V access=1
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->handlers:Ljava/util/Map; [rt=FIELD]
+invoke-interface reg=1 ref=Ljava/util/Map;->values()Ljava/util/Collection; [rt=METHOD]
+move-result-object 
+invoke-interface reg=1 ref=Ljava/util/Collection;->iterator()Ljava/util/Iterator; [rt=METHOD]
+move-result-object 
+invoke-interface reg=1 ref=Ljava/util/Iterator;->hasNext()Z [rt=METHOD]
+move-result 
+if-eqz 
+invoke-interface reg=1 ref=Ljava/util/Iterator;->next()Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+check-cast  ref=Lcsdk/gluads/IAdvertising; [rt=TYPE]
+invoke-interface reg=2 ref=Lcsdk/gluads/IAdvertising;->setAdvertisingListener(Lcsdk/gluads/IAdvertisingListener;)V [rt=METHOD]
+goto 
+return-void 
+--- method: setAdvertisingListener ret=V access=1
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->listener:Ljava/util/concurrent/atomic/AtomicReference; [rt=FIELD]
+if-eqz 
+goto 
+sget-object  ref=Lcsdk/gluads/impl/NullAdvertisingListener;->INSTANCE:Lcsdk/gluads/IAdvertisingListener; [rt=FIELD]
+invoke-virtual reg=2 ref=Ljava/util/concurrent/atomic/AtomicReference;->set(Ljava/lang/Object;)V [rt=METHOD]
+return-void 
+--- method: setAdvertisingPrivacyStage ret=V access=1
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mPrivacyStatusUpdateHandlers:Ljava/util/Map; [rt=FIELD]
+invoke-interface reg=3 ref=Ljava/util/Map;->put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object; [rt=METHOD]
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mPrivacyStages:Ljava/util/Map; [rt=FIELD]
+invoke-interface reg=3 ref=Ljava/util/Map;->put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object; [rt=METHOD]
+return-void 
+--- method: setComponentHandlers ret=V access=1
+if-eqz 
+const/4 
+goto 
+const/4 
+const-string  ref=handlers can't be null. [rt=STRING]
+invoke-static reg=2 ref=Lcsdk/gluads/util/Common;->require(ZLjava/lang/String;)V [rt=METHOD]
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->handlers:Ljava/util/Map; [rt=FIELD]
+if-eqz 
+invoke-static reg=1 ref=Lcsdk/gluads/util/Common;->shallowClone(Ljava/util/Map;)Ljava/util/Map; [rt=METHOD]
+move-result-object 
+invoke-interface reg=2 ref=Ljava/util/Map;->putAll(Ljava/util/Map;)V [rt=METHOD]
+iput-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->handlers:Ljava/util/Map; [rt=FIELD]
+return-void 
+iput-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->handlers:Ljava/util/Map; [rt=FIELD]
+return-void 
+--- method: setCustomProperties ret=V access=1
+invoke-direct reg=2 ref=Lcsdk/gluads/impl/AdvertisingImpl;->isPrivacyPolicyUpdate(Ljava/util/Map;)Z [rt=METHOD]
+move-result 
+if-eqz 
+invoke-direct reg=2 ref=Lcsdk/gluads/impl/AdvertisingImpl;->updatePrivacyStatus(Ljava/util/Map;)V [rt=METHOD]
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->handlers:Ljava/util/Map; [rt=FIELD]
+invoke-interface reg=1 ref=Ljava/util/Map;->values()Ljava/util/Collection; [rt=METHOD]
+move-result-object 
+invoke-interface reg=1 ref=Ljava/util/Collection;->iterator()Ljava/util/Iterator; [rt=METHOD]
+move-result-object 
+invoke-interface reg=1 ref=Ljava/util/Iterator;->hasNext()Z [rt=METHOD]
+move-result 
+if-eqz 
+invoke-interface reg=1 ref=Ljava/util/Iterator;->next()Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+check-cast  ref=Lcsdk/gluads/IAdvertising; [rt=TYPE]
+invoke-interface reg=2 ref=Lcsdk/gluads/IAdvertising;->setCustomProperties(Ljava/util/Map;)V [rt=METHOD]
+goto 
+return-void 
+--- method: setInitHandler ret=V access=1
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mInitHandlers:Ljava/util/Map; [rt=FIELD]
+invoke-interface reg=3 ref=Ljava/util/Map;->put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object; [rt=METHOD]
+return-void 
+--- method: setUserIdentifier ret=V access=1
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->handlers:Ljava/util/Map; [rt=FIELD]
+invoke-interface reg=1 ref=Ljava/util/Map;->values()Ljava/util/Collection; [rt=METHOD]
+move-result-object 
+invoke-interface reg=1 ref=Ljava/util/Collection;->iterator()Ljava/util/Iterator; [rt=METHOD]
+move-result-object 
+invoke-interface reg=1 ref=Ljava/util/Iterator;->hasNext()Z [rt=METHOD]
+move-result 
+if-eqz 
+invoke-interface reg=1 ref=Ljava/util/Iterator;->next()Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+check-cast  ref=Lcsdk/gluads/IAdvertising; [rt=TYPE]
+invoke-interface reg=3 ref=Lcsdk/gluads/IAdvertising;->setUserIdentifier(Ljava/lang/String;Ljava/util/Map;)V [rt=METHOD]
+goto 
+return-void 
+--- method: show ret=V access=1
+const/4 
+const/4 
+if-eqz 
+move 
+goto 
+move 
+const-string  ref=advertisementType can't be null. [rt=STRING]
+invoke-static reg=2 ref=Lcsdk/gluads/util/Common;->require(ZLjava/lang/String;)V [rt=METHOD]
+if-eqz 
+goto 
+move 
+const-string  ref=placement can't be null. [rt=STRING]
+invoke-static reg=2 ref=Lcsdk/gluads/util/Common;->require(ZLjava/lang/String;)V [rt=METHOD]
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->handlers:Ljava/util/Map; [rt=FIELD]
+invoke-interface reg=2 ref=Ljava/util/Map;->get(Ljava/lang/Object;)Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+check-cast  ref=Lcsdk/gluads/IAdvertising; [rt=TYPE]
+if-eqz 
+invoke-direct reg=2 ref=Lcsdk/gluads/impl/AdvertisingImpl;->putIfUserAgeIsPresent(Ljava/util/Map;)Ljava/util/Map; [rt=METHOD]
+move-result-object 
+invoke-interface reg=4 ref=Lcsdk/gluads/IAdvertising;->show(Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)V [rt=METHOD]
+return-void 
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->listener:Ljava/util/concurrent/atomic/AtomicReference; [rt=FIELD]
+invoke-virtual reg=1 ref=Ljava/util/concurrent/atomic/AtomicReference;->get()Ljava/lang/Object; [rt=METHOD]
+move-result-object 
+check-cast  ref=Lcsdk/gluads/IAdvertisingListener; [rt=TYPE]
+new-instance  ref=Lcsdk/gluads/PlacementEvent; [rt=TYPE]
+new-instance  ref=Ljava/lang/UnsupportedOperationException; [rt=TYPE]
+new-instance  ref=Ljava/lang/StringBuilder; [rt=TYPE]
+const-string  ref=Unknown advertisementType:  [rt=STRING]
+invoke-direct reg=2 ref=Ljava/lang/StringBuilder;-><init>(Ljava/lang/String;)V [rt=METHOD]
+invoke-virtual reg=2 ref=Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder; [rt=METHOD]
+move-result-object 
+const-string  ref=. [rt=STRING]
+invoke-virtual reg=2 ref=Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder; [rt=METHOD]
+move-result-object 
+invoke-virtual reg=1 ref=Ljava/lang/StringBuilder;->toString()Ljava/lang/String; [rt=METHOD]
+move-result-object 
+invoke-direct reg=2 ref=Ljava/lang/UnsupportedOperationException;-><init>(Ljava/lang/String;)V [rt=METHOD]
+const-string  ref=showFinished [rt=STRING]
+move-object 
+move-object 
+move-object 
+invoke-direct/range reg=6 ref=Lcsdk/gluads/PlacementEvent;-><init>(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;Ljava/util/Map;)V [rt=METHOD]
+invoke-interface reg=2 ref=Lcsdk/gluads/IAdvertisingListener;->onPlacementEvent(Lcsdk/gluads/PlacementEvent;)V [rt=METHOD]
+return-void 
+--- method: updatePrivacyStage ret=V access=1
+iget-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->mPrivacyStages:Ljava/util/Map; [rt=FIELD]
+invoke-interface reg=3 ref=Ljava/util/Map;->put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object; [rt=METHOD]
+return-void 
+--- method: updateUserAge ret=V access=1
+iput-object  ref=Lcsdk/gluads/impl/AdvertisingImpl;->userAge:Ljava/lang/Integer; [rt=FIELD]
+return-void 

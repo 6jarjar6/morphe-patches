@@ -43,13 +43,24 @@ val bejeweledAdFree = bytecodePatch(
         //   registers (ev + r1..r5) needed to assemble the PlacementEvent
         //   constructor via invoke-direct/range (this + 5 args = 6 regs).
         showMethod.getFreeRegisterProvider(0, 7).let { rp ->
-            val listener = rp.getFreeRegister()
-            val ev = rp.getFreeRegister()
-            val r1 = rp.getFreeRegister()
-            val r2 = rp.getFreeRegister()
-            val r3 = rp.getFreeRegister()
-            val r4 = rp.getFreeRegister()
-            val r5 = rp.getFreeRegister()
+            val granted = (1..7).mapNotNull { rp.getFreeRegister() }.distinct()
+            check(granted.size >= 7) { "Need >=7 free registers, got ${granted.size}" }
+            // The provider's handout order is NOT numeric (observed v5 before v4),
+            // so ignore it: find the LOWEST contiguous 6-wide block, then take the
+            // remaining register as the listener (guaranteed outside the block).
+            var lo = -1
+            outer@ for (k in granted.sorted()) {
+                if ((k..k + 5).all { granted.contains(it) }) { lo = k; break@outer }
+            }
+            check(lo >= 0) { "Could not find 6 contiguous free registers among ${granted.sorted()}" }
+            val block = (lo..lo + 5).toList()
+            val listener = granted.first { !block.contains(it) }
+            val ev = lo
+            val r1 = lo + 1
+            val r2 = lo + 2
+            val r3 = lo + 3   // 3rd ctor arg = String
+            val r4 = lo + 4   // 4th ctor arg = Throwable (null)
+            val r5 = lo + 5
 
             showMethod.addInstructionsWithLabels(
                 0,

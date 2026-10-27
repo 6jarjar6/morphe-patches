@@ -1,0 +1,67 @@
+# class Lcom/popcap/pcsp/marketing/GoogleImaDriver;
+--- method: -$$Nest$fgetmActivity ret=Landroid/app/Activity; access=4168
+iget-object  ref=Lcom/popcap/pcsp/marketing/GoogleImaDriver;->mActivity:Landroid/app/Activity; [rt=FIELD]
+return-object 
+--- method: -$$Nest$fgetmDriver ret=Ljava/lang/Long; access=4168
+iget-object  ref=Lcom/popcap/pcsp/marketing/GoogleImaDriver;->mDriver:Ljava/lang/Long; [rt=FIELD]
+return-object 
+--- method: -$$Nest$mnotifyAdClicked ret=V access=4168
+invoke-direct reg=3 ref=Lcom/popcap/pcsp/marketing/GoogleImaDriver;->notifyAdClicked(J)V [rt=METHOD]
+return-void 
+--- method: -$$Nest$mnotifyAdClosed ret=V access=4168
+invoke-direct reg=3 ref=Lcom/popcap/pcsp/marketing/GoogleImaDriver;->notifyAdClosed(J)V [rt=METHOD]
+return-void 
+--- method: -$$Nest$mnotifyAdLoaded ret=V access=4168
+invoke-direct reg=4 ref=Lcom/popcap/pcsp/marketing/GoogleImaDriver;->notifyAdLoaded(JZ)V [rt=METHOD]
+return-void 
+--- method: <init> ret=V access=65537
+invoke-direct reg=1 ref=Ljava/lang/Object;-><init>()V [rt=METHOD]
+iput-object  ref=Lcom/popcap/pcsp/marketing/GoogleImaDriver;->mActivity:Landroid/app/Activity; [rt=FIELD]
+const/4 
+iput-object  ref=Lcom/popcap/pcsp/marketing/GoogleImaDriver;->mDriver:Ljava/lang/Long; [rt=FIELD]
+return-void 
+--- method: <init> ret=V access=65537
+invoke-direct reg=1 ref=Ljava/lang/Object;-><init>()V [rt=METHOD]
+iput-object  ref=Lcom/popcap/pcsp/marketing/GoogleImaDriver;->mActivity:Landroid/app/Activity; [rt=FIELD]
+invoke-static reg=2 ref=Ljava/lang/Long;->valueOf(J)Ljava/lang/Long; [rt=METHOD]
+move-result-object 
+iput-object  ref=Lcom/popcap/pcsp/marketing/GoogleImaDriver;->mDriver:Ljava/lang/Long; [rt=FIELD]
+new-instance  ref=Lcom/popcap/pcsp/marketing/GoogleImaDriver$1; [rt=TYPE]
+invoke-direct reg=2 ref=Lcom/popcap/pcsp/marketing/GoogleImaDriver$1;-><init>(Lcom/popcap/pcsp/marketing/GoogleImaDriver;)V [rt=METHOD]
+invoke-virtual reg=2 ref=Lcom/popcap/pcsp/marketing/GoogleImaDriver;->setLoadAdCallback(Lcom/popcap/pcsp/marketing/ima/GoogleImaAgent$LoadAdCallback;)V [rt=METHOD]
+new-instance  ref=Lcom/popcap/pcsp/marketing/GoogleImaDriver$2; [rt=TYPE]
+invoke-direct reg=2 ref=Lcom/popcap/pcsp/marketing/GoogleImaDriver$2;-><init>(Lcom/popcap/pcsp/marketing/GoogleImaDriver;)V [rt=METHOD]
+invoke-virtual reg=2 ref=Lcom/popcap/pcsp/marketing/GoogleImaDriver;->setShowAdCallback(Lcom/popcap/pcsp/marketing/ima/GoogleImaAgent$ShowAdCallback;)V [rt=METHOD]
+return-void 
+--- method: notifyAdClicked ret=V access=258
+--- method: notifyAdClosed ret=V access=258
+--- method: notifyAdLoaded ret=V access=258
+--- method: LoadAd ret=V access=1
+const-string  ref=GoogleImaDriver [rt=STRING]
+const-string  ref=Loading interactive ad [rt=STRING]
+invoke-static reg=2 ref=Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I [rt=METHOD]
+iget-object  ref=Lcom/popcap/pcsp/marketing/GoogleImaDriver;->mActivity:Landroid/app/Activity; [rt=FIELD]
+new-instance  ref=Lcom/popcap/pcsp/marketing/GoogleImaDriver$3; [rt=TYPE]
+invoke-direct reg=3 ref=Lcom/popcap/pcsp/marketing/GoogleImaDriver$3;-><init>(Lcom/popcap/pcsp/marketing/GoogleImaDriver;Ljava/lang/String;)V [rt=METHOD]
+invoke-virtual reg=2 ref=Landroid/app/Activity;->runOnUiThread(Ljava/lang/Runnable;)V [rt=METHOD]
+return-void 
+--- method: ShowAd ret=Z access=1
+const-string  ref=GoogleImaDriver [rt=STRING]
+const-string  ref=Starting interactive ad [rt=STRING]
+invoke-static reg=2 ref=Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I [rt=METHOD]
+iget-object  ref=Lcom/popcap/pcsp/marketing/GoogleImaDriver;->mActivity:Landroid/app/Activity; [rt=FIELD]
+new-instance  ref=Lcom/popcap/pcsp/marketing/GoogleImaDriver$4; [rt=TYPE]
+invoke-direct reg=2 ref=Lcom/popcap/pcsp/marketing/GoogleImaDriver$4;-><init>(Lcom/popcap/pcsp/marketing/GoogleImaDriver;)V [rt=METHOD]
+invoke-virtual reg=2 ref=Landroid/app/Activity;->runOnUiThread(Ljava/lang/Runnable;)V [rt=METHOD]
+const/4 
+return 
+--- method: setLoadAdCallback ret=V access=1
+invoke-static reg=0 ref=Lcom/popcap/pcsp/marketing/ima/GoogleImaAgent;->getInstance()Lcom/popcap/pcsp/marketing/ima/GoogleImaAgent; [rt=METHOD]
+move-result-object 
+invoke-virtual reg=2 ref=Lcom/popcap/pcsp/marketing/ima/GoogleImaAgent;->setLoadAdCallback(Lcom/popcap/pcsp/marketing/ima/GoogleImaAgent$LoadAdCallback;)V [rt=METHOD]
+return-void 
+--- method: setShowAdCallback ret=V access=1
+invoke-static reg=0 ref=Lcom/popcap/pcsp/marketing/ima/GoogleImaAgent;->getInstance()Lcom/popcap/pcsp/marketing/ima/GoogleImaAgent; [rt=METHOD]
+move-result-object 
+invoke-virtual reg=2 ref=Lcom/popcap/pcsp/marketing/ima/GoogleImaAgent;->setShowAdCallback(Lcom/popcap/pcsp/marketing/ima/GoogleImaAgent$ShowAdCallback;)V [rt=METHOD]
+return-void 
