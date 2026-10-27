@@ -23,6 +23,8 @@ jobs:
           java-version: '21'
 
       - name: Build patches
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./gradlew :patches:buildAndroid --no-daemon
 
       - name: List artifacts
