@@ -128,4 +128,5 @@ node_modules/
 # Ignore IDEA files
 .idea/
 local.properties
-src/bejeweed-analysis/refs
+# Internal analysis/working tree — never publish
+src/
