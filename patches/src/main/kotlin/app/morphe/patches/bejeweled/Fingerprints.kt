@@ -713,3 +713,147 @@ object GluAnalyticsUnsyncLogDefaultSegmentationFingerprint : Fingerprint(
     parameters = listOf("Ljava/lang/String;", "Ljava/util/Map;", "Z"),
     filters = listOf(anyInstruction(opcode(Opcode.RETURN_VOID)))
 )
+
+/* ========================================================================================
+ * Phase-6 kill — residual vendors that survived Phases 1-5.
+ *
+ * Post-v1.1.7 DNS log still shows live hits. These are the channels that
+ * slipped past the earlier chokepoints, each cut at its lowest safe point:
+ *
+ *   draper.popcap.com / moreinfo.popcap.com / gats.popcap.com /
+ *   moreinfo.popcap.com.mynetworksettings.com
+ *         <- com.popcap.pcsp.NetworkerJNI (STATIC HttpGet/HttpPost/RedeemPost).
+ *            Despite the "JNI" name the three wrappers are pure Java: each
+ *            spawns a thread whose run() runs an HttpURLConnection to the
+ *            popcap host. Killing the wrappers kills every popcap HTTP POST.
+ *            (Only callback() is a native symbol, reached solely from those
+ *             threads - with no thread, no network.)
+ *
+ *   i-sdk.mediation.unity3d.com
+ *         <- com.ironsource.mediationsdk.e$a / d$b (anonymous Runnable
+ *            mediation workers). The URL is composed by Ke.smali (field `a`
+ *            base + ?request=<guid>); e$a.run()/d$b.run() open the actual
+ *            connection. Killing their run() no-ops every mediation transfer.
+ *
+ *   graph.facebook.com (token-validation pings)
+ *         <- com.facebook.AccessTokenTracker / AuthenticationTokenTracker
+ *            startTracking(). These periodically re-validate the (null)
+ *            token against the meta graph API. stop-tracking stops the polling.
+ *
+ * NOTE: graph.instagram.com / i.instagram.com / graph.facebook.com (feed /
+ * photo / ads events) and all *.fallback / i-* CDN mirrors are NOT killable
+ * here: the Facebook/Instagram classes ship ZERO network primitives in this
+ * dex and no "graph." / "instagram." URL literals exist in the Java layer.
+ * Their traffic originates from Google Play Services (loaded separately) or a
+ * native SDK - outside the app's Java dex. Similarly fundingchoices
+ * (Consent SDK), connectivitycheck (framework) and NextDNS (resolver) are
+ * outside the app's control.
+ */
+
+/**
+ * NetworkerJNI.HttpGet(String, long) -> void   (static)
+ *
+ * Spawns the GET-worker thread that issues the HttpURLConnection to the popcap
+ * host (draper / moreinfo / gats). Early-returning skips thread creation, so
+ * the request never reaches the wire.
+ */
+object NetworkerJNIHttpGetFingerprint : Fingerprint(
+    definingClass = "Lcom/popcap/pcsp/NetworkerJNI;",
+    name = "HttpGet",
+    isStatic = true,
+    returnType = "V",
+    parameters = listOf("Ljava/lang/String;", "J"),
+    filters = listOf(anyInstruction(opcode(Opcode.RETURN_VOID)))
+)
+
+/**
+ * NetworkerJNI.HttpPost(String, String, long) -> void   (static)
+ *
+ * Spawns the POST-worker thread that issues the HttpURLConnection (body = the
+ * posted map). Early-returning stops every popcap POST.
+ */
+object NetworkerJNIHttpPostFingerprint : Fingerprint(
+    definingClass = "Lcom/popcap/pcsp/NetworkerJNI;",
+    name = "HttpPost",
+    isStatic = true,
+    returnType = "V",
+    parameters = listOf("Ljava/lang/String;", "Ljava/lang/String;", "J"),
+    filters = listOf(anyInstruction(opcode(Opcode.RETURN_VOID)))
+)
+
+/**
+ * NetworkerJNI.Redemption(String, String, long) -> void   (static)
+ *
+ * Spawns the redemption-worker thread (offers / entitlements on popcap).
+ * Early-returning stops the redemption flow from reaching the wire.
+ */
+object NetworkerJNIRedemptionFingerprint : Fingerprint(
+    definingClass = "Lcom/popcap/pcsp/NetworkerJNI;",
+    name = "RedeemPost",
+    isStatic = true,
+    returnType = "V",
+    parameters = listOf("Ljava/lang/String;", "Ljava/lang/String;", "J"),
+    filters = listOf(anyInstruction(opcode(Opcode.RETURN_VOID)))
+)
+
+/**
+ * IronSource mediation worker e$a.run() -> void
+ *
+ * Anonymous GET worker for the IronSource mediation layer (i-sdk.mediation.
+ * unity3d.com). Its run() opens the HttpURLConnection to the composed URL.
+ * Early-returning no-ops the mediation fetch.
+ */
+object IronSourceMediationWorkerEFingerprint : Fingerprint(
+    definingClass = "Lcom/ironsource/mediationsdk/e\$a;",
+    name = "run",
+    isStatic = false,
+    returnType = "V",
+    parameters = listOf(),
+    filters = listOf(anyInstruction(opcode(Opcode.RETURN_VOID)))
+)
+
+/**
+ * IronSource mediation worker d$b.run() -> void
+ *
+ * Anonymous POST worker (companion to e$a). Early-returning no-ops the
+ * mediation POST.
+ */
+object IronSourceMediationWorkerDFingerprint : Fingerprint(
+    definingClass = "Lcom/ironsource/mediationsdk/d\$b;",
+    name = "run",
+    isStatic = false,
+    returnType = "V",
+    parameters = listOf(),
+    filters = listOf(anyInstruction(opcode(Opcode.RETURN_VOID)))
+)
+
+/**
+ * AccessTokenTracker.startTracking() -> void
+ *
+ * Starts the periodic re-validation of the Facebook access-token against the
+ * graph API. Early-returning stops the token-validation polling (and with it
+ * the resulting graph.facebook.com validation pings).
+ */
+object AccessTokenTrackerStartTrackingFingerprint : Fingerprint(
+    definingClass = "Lcom/facebook/AccessTokenTracker;",
+    name = "startTracking",
+    isStatic = false,
+    returnType = "V",
+    parameters = listOf(),
+    filters = listOf(anyInstruction(opcode(Opcode.RETURN_VOID)))
+)
+
+/**
+ * AuthenticationTokenTracker.startTracking() -> void
+ *
+ * Companion to the access-token tracker - re-validates the
+ * Facebook-authentication-token. Early-returning stops the polling.
+ */
+object AuthenticationTokenTrackerStartTrackingFingerprint : Fingerprint(
+    definingClass = "Lcom/facebook/AuthenticationTokenTracker;",
+    name = "startTracking",
+    isStatic = false,
+    returnType = "V",
+    parameters = listOf(),
+    filters = listOf(anyInstruction(opcode(Opcode.RETURN_VOID)))
+)

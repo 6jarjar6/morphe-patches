@@ -46,7 +46,7 @@ import app.morphe.patches.shared.Constants
 @Suppress("SpellCheckingInspection")
 val bejeweledTelemetryDisabled = bytecodePatch(
     name = "Telemetry-disabled",
-    description = "Stops Nimble/Synergy, Firebase, GLUAnalytics (incl. privacy flags), Facebook and Unity telemetry.",
+    description = "Stops Nimble/Synergy, Firebase, GLUAnalytics (incl. privacy flags), Facebook/Unity, popcap, and IronSource mediation telemetry.",
     default = true
 ) {
     compatibleWith(Constants.BEJEWELED_COMPATIBILITY)
@@ -170,6 +170,25 @@ val bejeweledTelemetryDisabled = bytecodePatch(
             method.replaceInstruction(idx, "const/4 v$resultReg, 0x0")
             method.removeInstruction(idx + 1)
         }
+
+        // ------------------------------------------------------------------
+        // PHASE 6 — residual vendors that survived Phases 1-5 (see
+        // Fingerprints.kt Phase-6 block).
+        // ------------------------------------------------------------------
+
+        // popcap (draper / moreinfo / gats) - the NetworkerJNI Java wrappers
+        // spawn the HTTP worker threads; killing them kills every popcap POST.
+        NetworkerJNIHttpGetFingerprint.method.returnEarly()
+        NetworkerJNIHttpPostFingerprint.method.returnEarly()
+        NetworkerJNIRedemptionFingerprint.method.returnEarly()
+
+        // IronSource mediation workers (i-sdk.mediation.unity3d.com).
+        IronSourceMediationWorkerEFingerprint.method.returnEarly()
+        IronSourceMediationWorkerDFingerprint.method.returnEarly()
+
+        // Facebook token trackers (graph token-validation pings).
+        AccessTokenTrackerStartTrackingFingerprint.method.returnEarly()
+        AuthenticationTokenTrackerStartTrackingFingerprint.method.returnEarly()
     }
 }
 
