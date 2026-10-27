@@ -1,10 +1,14 @@
 package app.morphe.patches.bejeweled
 
 import app.morphe.patcher.Fingerprint
+import app.morphe.patcher.anyInstruction
+import app.morphe.patcher.opcode
 import app.morphe.patcher.fieldAccess
 import app.morphe.patcher.literal
 import app.morphe.patcher.methodCall
 import app.morphe.patcher.string
+import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.Opcode
 
 /**
@@ -119,4 +123,178 @@ object OperationalTelemetryLogEventFingerprint : Fingerprint(
     filters = listOf(
         string("com.ea.nimble.network")
     )
+)
+
+/* ========================================================================================
+ * Broad telemetry kill — the SDKs the Nimble/Synergy gate does NOT cover.
+ *
+ * The game ships a far wider analytics/ad stack than Nimble/Synergy. The residual
+ * channels observed in the user's DNS log (Firebase, Facebook Audience Network,
+ * Unity Ads, GLUAnalytics) each have their own network layer. We neutralise each
+ * at its cheapest, safest choke point:
+ *
+ *  - CctTransportBackend.send          -> throw (the single Firebase DataTransport
+ *                                       egress for Analytics + Crashlytics + ML + auth)
+ *  - GluAnalytics Analytics.logEvent   -> return (central EA analytics hub recorder)
+ *  - GluAnalytics Analytics.doLogEvent -> return (hub dispatch, 2 overloads)
+ *  - GluAnalytics Analytics.init       -> return (prevent the hub from starting)
+ *  - AudienceNetworkAds.initialize     -> return (Facebook ads SDK never boots)
+ *  - UnityAds.initialize (4 overloads) -> return (Unity Ads SDK never boots)
+ *
+ * Each match is discriminated by the exact signature (class + name + parameters
+ * + return type) anchored to the guaranteed final return instruction — no reliance
+ * on body introspection.
+ */
+
+/**
+ * CctTransportBackend.send(BackendRequest) -> BackendResponse
+ *
+ * The one method every Firebase DataTransport destination (Analytics, Crashlytics,
+ * ML Kit, auth) flows through to reach the wire. We replace it with a thrown
+ * IOException, so every upload is marked "deferred/failed" and never leaves the
+ * device. The transport's retry machinery handles the exception gracefully.
+ */
+object CctTransportSendFingerprint : Fingerprint(
+    definingClass = "Lcom/google/android/datatransport/cct/CctTransportBackend;",
+    name = "send",
+    isStatic = false,
+    returnType = "Lcom/google/android/datatransport/runtime/backends/BackendResponse;",
+    parameters = listOf("Lcom/google/android/datatransport/runtime/backends/BackendRequest;"),
+    filters = listOf(anyInstruction(opcode(Opcode.RETURN_OBJECT))),
+)
+
+/**
+ * GLUAnalytics hub — Analytics.logEvent (7-arg: String, String, String, String,
+ * Long, Long, Map) -> void
+ *
+ * The central EA analytics hub records events here. Early-returning stops the
+ * hub from accumulating/dispatching behaviour events downstream.
+ */
+object GluAnalyticsLogEventFingerprint : Fingerprint(
+    definingClass = "Lcom/glu/plugins/gluanalytics/Analytics;",
+    name = "logEvent",
+    isStatic = false,
+    returnType = "V",
+    parameters = listOf("Ljava/lang/String;", "Ljava/lang/String;", "Ljava/lang/String;", "Ljava/lang/String;", "Ljava/lang/Long;", "Ljava/lang/Long;", "Ljava/util/Map;"),
+    filters = listOf(anyInstruction(opcode(Opcode.RETURN_VOID))),
+)
+
+/**
+ * GLUAnalytics hub — Analytics.doLogEvent (Long-overload) -> void.
+ * Dispatch side of the hub.
+ */
+object GluAnalyticsDoLogEventLongFingerprint : Fingerprint(
+    definingClass = "Lcom/glu/plugins/gluanalytics/Analytics;",
+    name = "doLogEvent",
+    isStatic = false,
+    returnType = "V",
+    parameters = listOf("Ljava/lang/String;", "Ljava/lang/String;", "Ljava/lang/String;", "Ljava/lang/String;", "Ljava/lang/Long;", "Ljava/lang/Long;", "Ljava/util/Map;"),
+    filters = listOf(anyInstruction(opcode(Opcode.RETURN_VOID))),
+)
+
+/**
+ * GLUAnalytics hub — Analytics.doLogEvent (BigDecimal-overload) -> void.
+ */
+object GluAnalyticsDoLogEventBigDecimalFingerprint : Fingerprint(
+    definingClass = "Lcom/glu/plugins/gluanalytics/Analytics;",
+    name = "doLogEvent",
+    isStatic = false,
+    returnType = "V",
+    parameters = listOf("Ljava/lang/String;", "Ljava/lang/String;", "Ljava/lang/String;", "Ljava/lang/String;", "Ljava/math/BigDecimal;", "Ljava/lang/Long;", "Ljava/util/Map;"),
+    filters = listOf(anyInstruction(opcode(Opcode.RETURN_VOID))),
+)
+
+/**
+ * GLUAnalytics hub — Analytics.init(IAnalyticsCallback) -> void.
+ * Preventing the hub from initializing cuts the pipeline at the root.
+ */
+object GluAnalyticsInitFingerprint : Fingerprint(
+    definingClass = "Lcom/glu/plugins/gluanalytics/Analytics;",
+    name = "init",
+    isStatic = false,
+    returnType = "V",
+    parameters = listOf("Lcom/glu/plugins/gluanalytics/IAnalyticsCallback;"),
+    filters = listOf(anyInstruction(opcode(Opcode.RETURN_VOID))),
+)
+
+/**
+ * AudienceNetworkAds.initialize(Context) -> void  (static)
+ *
+ * Booting the Facebook Audience Network SDK. Early-returning means the SDK
+ * never initializes, so it never polls facebook/instagram CDN.
+ */
+object AudienceNetworkAdsInitFingerprint : Fingerprint(
+    definingClass = "Lcom/facebook/ads/AudienceNetworkAds;",
+    name = "initialize",
+    isStatic = true,
+    returnType = "V",
+    parameters = listOf("Landroid/content/Context;"),
+    filters = listOf(anyInstruction(opcode(Opcode.RETURN_VOID))),
+)
+
+/**
+ * UnityAds.initialize(Context, String) -> void  (static)
+ * Primary overload.
+ */
+object UnityAdsInit2Fingerprint : Fingerprint(
+    definingClass = "Lcom/unity3d/ads/UnityAds;",
+    name = "initialize",
+    isStatic = true,
+    returnType = "V",
+    parameters = listOf("Landroid/content/Context;", "Ljava/lang/String;"),
+    filters = listOf(anyInstruction(opcode(Opcode.RETURN_VOID))),
+)
+
+/**
+ * UnityAds.initialize(Context, String, IUnityAdsInitializationListener) -> void  (static)
+ */
+object UnityAdsInitListenerFingerprint : Fingerprint(
+    definingClass = "Lcom/unity3d/ads/UnityAds;",
+    name = "initialize",
+    isStatic = true,
+    returnType = "V",
+    parameters = listOf("Landroid/content/Context;", "Ljava/lang/String;", "Lcom/unity3d/ads/IUnityAdsInitializationListener;"),
+    filters = listOf(anyInstruction(opcode(Opcode.RETURN_VOID))),
+)
+
+/**
+ * UnityAds.initialize(Context, String, boolean) -> void  (static)
+ */
+object UnityAdsInitDebugFingerprint : Fingerprint(
+    definingClass = "Lcom/unity3d/ads/UnityAds;",
+    name = "initialize",
+    isStatic = true,
+    returnType = "V",
+    parameters = listOf("Landroid/content/Context;", "Ljava/lang/String;", "Z"),
+    filters = listOf(anyInstruction(opcode(Opcode.RETURN_VOID))),
+)
+
+/**
+ * UnityAds.initialize(Context, String, boolean, IUnityAdsInitializationListener) -> void  (static)
+ */
+object UnityAdsInitDebugListenerFingerprint : Fingerprint(
+    definingClass = "Lcom/unity3d/ads/UnityAds;",
+    name = "initialize",
+    isStatic = true,
+    returnType = "V",
+    parameters = listOf("Landroid/content/Context;", "Ljava/lang/String;", "Z", "Lcom/unity3d/ads/IUnityAdsInitializationListener;"),
+    filters = listOf(anyInstruction(opcode(Opcode.RETURN_VOID))),
+)
+
+/**
+ * The set of UnityAds.initialize overloads, for bulk neutralisation.
+ */
+val unityAdsInitOverloads: List<Fingerprint> = listOf(
+    UnityAdsInit2Fingerprint,
+    UnityAdsInitListenerFingerprint,
+    UnityAdsInitDebugFingerprint,
+    UnityAdsInitDebugListenerFingerprint
+)
+
+/**
+ * The set of GLUAnalytics hub dispatch overloads (doLogEvent).
+ */
+val gluAnalyticsDoLogOverloads: List<Fingerprint> = listOf(
+    GluAnalyticsDoLogEventLongFingerprint,
+    GluAnalyticsDoLogEventBigDecimalFingerprint
 )
