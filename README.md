@@ -10,7 +10,7 @@ These patches were developed with AI assistance. Each patch was statically verif
 
 ### How to use these patches
 
-Click here to add these patches to Morphe: https://morphe.software/add-source?github=6jarjar6/morphe-bejeweled-patches
+Click here to add these patches to Morphe: https://morphe.software/add-source?github=6jarjar6/morphe-patches
 
 ## Patches list
 
