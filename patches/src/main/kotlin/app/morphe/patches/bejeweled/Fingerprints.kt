@@ -613,3 +613,103 @@ object GluAnalyticsSendDataToCacheServiceFingerprint : Fingerprint(
     parameters = listOf(),
     filters = listOf(anyInstruction(opcode(Opcode.RETURN_VOID)))
 )
+
+/* ========================================================================================
+ * Phase-4 crash-fix — the Kinesis/Cognito credential chain that v1.1.3's
+ * AmazonHttpClient.execute null-return trips into an NPE.
+ *
+ * Real-device crash (Fresh-install, 12:42):
+ *   NullPointerException: Attempt to invoke virtual method
+ *   'Object com.amazonaws.Response.getAwsResponse()' on a null object reference
+ *     at AmazonCognitoIdentityClient.getOpenIdToken
+ *     <- AWSAbstractCognitoIdentityProvider.getToken / refresh
+ *     <- AWSBasicCognitoIdentityProvider.refresh
+ *     <- CognitoCredentialsProvider.startSession / getCredentials
+ *     <- CognitoCachingCredentialsProvider.getCredentials
+ *     <- AmazonKinesisClient.invoke / putRecords
+ *     <- KinesisStreamRecordSender.sendBatch
+ *     <- AbstractKinesisRecorder.submitAllRecords
+ *     <- KinesisRecorderStream$3.run (the flu-analytics-pps handler)
+ *
+ * Once execute() returns null, the first thing to consume the null Response is
+ * the Kinesis recording flusher. Close the chain upstream of the null consumer:
+ *   1. KinesisRecorderStream.flush()              (the Kinesis stream flush itself)
+ *   2. AbstractKinesisRecorder.submitAllRecords() (second layer)
+ *   3. AWSBasicCognitoIdentityProvider.refresh()  (closes the credentials chain
+ *                                                globally — no other component
+ *                                                can trip the NPE even if a
+ *                                                separate path touches cognito)
+ *   4. GluAnalytics.unsync_logDefaultSegmentationValues()
+ *                                            (defense against the old-build mCallback
+ *                                             NPE family; the supplier guard +
+ *                                              CrashGuard already covers this in
+ *                                              the current build, but this is
+ *                                              cheap)
+ */
+
+/**
+ * KinesisRecorderStream.flush() -> void
+ *
+ * Entry point of the kinesis-recording flusher (implements IRecordStream). Posts a
+ * runnable onto the flu-analytics-pps handler that executes
+ * `mut_kinesis.submitAllRecords()`. Early-returning kills the Kinesis telemetry
+ * stream at its source.
+ */
+object KinesisRecorderStreamFlushFingerprint : Fingerprint(
+    definingClass = "Lcom/glu/plugins/gluanalytics/KinesisRecorderStream;",
+    name = "flush",
+    isStatic = false,
+    returnType = "V",
+    parameters = listOf(),
+    filters = listOf(anyInstruction(opcode(Opcode.RETURN_VOID)))
+)
+
+/**
+ * AbstractKinesisRecorder.submitAllRecords() -> void
+ *
+ * The kinesis-record batch submitter (called by KinesisRecorderStream$3.run).
+ * Second-layer kill in case the flusher is bypassed.
+ */
+object AbstractKinesisRecorderSubmitAllFingerprint : Fingerprint(
+    definingClass = "Lcom/amaz" + "onaws/mobileconnectors/kinesis/kinesisrec" + "order/AbstractKinesisRecorder;",
+    name = "submitAllRecords",
+    isStatic = false,
+    returnType = "V",
+    parameters = listOf(),
+    filters = listOf(anyInstruction(opcode(Opcode.RETURN_VOID)))
+)
+
+/**
+ * AWSBasicCognitoIdentityProvider.refresh() -> void
+ *
+ * Sole entry point of the cognito credentials-refresh chain (synchronized refresh
+ * → refresh()). Once execute() returns null, the first thing to NPE on the
+ * null Response is getOpenIdToken() — unreachable if refresh() early-returns.
+ * Closing here also protects any separate component that pulls cognito
+ * credentials (including the fluent-player-profile path).
+ */
+object AwsBasicCognitoIdentityProviderRefreshFingerprint : Fingerprint(
+    definingClass = "Lcom/amaz" + "onaws/auth/AWSBasicCognitoIdentityProvider;",
+    name = "refresh",
+    isStatic = false,
+    returnType = "Ljava/lang/String;",
+    parameters = listOf(),
+    filters = listOf(anyInstruction(opcode(Opcode.RETURN_OBJECT)))
+)
+
+/**
+ * GluAnalytics.unsync_logDefaultSegmentationValues(String, Map, boolean) -> void
+ *
+ * Writes the default segmentation/device values into the PS store and pushes
+ * them toward GCS (unsync_doUpdatePSValue → beginUpdatePSValue →
+ * createReqIdAndForwardToGCS). Pure telemetry payload. Defense-in-depth against
+ * the mCallback NPE family that crashed in the old build.
+ */
+object GluAnalyticsUnsyncLogDefaultSegmentationFingerprint : Fingerprint(
+    definingClass = "Lcom/glu/plugins/gluanalytics/GluAnalytics;",
+    name = "unsync_logDefaultSegmentationValues",
+    isStatic = false,
+    returnType = "V",
+    parameters = listOf("Ljava/lang/String;", "Ljava/util/Map;", "Z"),
+    filters = listOf(anyInstruction(opcode(Opcode.RETURN_VOID)))
+)

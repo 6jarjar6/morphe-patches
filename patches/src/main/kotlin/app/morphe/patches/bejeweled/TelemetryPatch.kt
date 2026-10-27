@@ -103,6 +103,34 @@ val bejeweledTelemetryDisabled = bytecodePatch(
         GluAnalyticsUnsyncLogGeoFingerprint.method.returnEarly()
         GluAnalyticsUnsyncSessionIDFingerprint.method.returnEarly()
         GluAnalyticsSendDataToCacheServiceFingerprint.method.returnEarly()
+
+        // ------------------------------------------------------------------
+        // PHASE 4 — close the Kinesis/Cognito credential chain BEFORE the
+        // AmazonHttpClient.execute null-return cascades into an NPE.
+        // Real-device crash (12:42, fresh install):
+        //   NullPointerException: Response.getAwsResponse() on a null object
+        //   at AmazonCognitoIdentityClient.getOpenIdToken
+        //     <- AWSBasicCognitoIdentityProvider.refresh
+        //     <- CognitoCredentialsProvider.getCredentials
+        //     <- AmazonKinesisClient.putRecords
+        //     <- AbstractKinesisRecorder.submitAllRecords
+        //     <- KinesisRecorderStream$3.run (the glu-analytics-pps handler)
+        //
+        // With execute() returning null, the first thing to consume the null
+        // Response is the Kinesis recorder flusher. Cutting the chain above
+        // the null consumer:
+        //   1. KinesisRecorderStream.flush()         — the flusher itself
+        //   2. AbstractKinesisRecorder.submitAllRecords — second layer
+        //   3. AWSBasicCognitoIdentityProvider.refresh — closes the credential
+        //      chain globally (String-returning; null-start return)
+        //   4. GluAnalytics.unsync_logDefaultSegmentationValues — defense
+        //      against the mCallback NPE family from the previous build
+        //      (vendor guard + CrashGuard already cover it in this build, but
+        //      this costs nothing).
+        KinesisRecorderStreamFlushFingerprint.method.returnEarly()
+        AbstractKinesisRecorderSubmitAllFingerprint.method.returnEarly()
+        AwsBasicCognitoIdentityProviderRefreshFingerprint.method.returnNullAtStart()
+        GluAnalyticsUnsyncLogDefaultSegmentationFingerprint.method.returnEarly()
     }
 }
 
