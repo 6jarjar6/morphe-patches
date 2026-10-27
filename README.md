@@ -16,7 +16,10 @@ Click here to add these patches to Morphe: https://morphe.software/add-source?gi
 
 <!-- PATCHES_START -->
 
-<!-- Do not modify this section by hand. The patch list is generated when release.yml creates a new release. -->
+<!-- Do not modify this section by hand. Regenerate it locally with:
+     ./gradlew generatePatchesList
+     python3 .github/scripts/generate_patches_readme.py 6jarjar6/morphe-patches <version> patches-list.json README.md
+-->
 
 <!-- PATCHES_END -->
 
