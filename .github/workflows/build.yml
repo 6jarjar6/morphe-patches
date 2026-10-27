@@ -43,17 +43,30 @@ jobs:
           tag_name: ${{ steps.version.outputs.tag }}
           files: patches/build/libs/*.mpp
 
-      - name: Generate patch list
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew :patches:generatePatchesList --no-daemon
-
-      - name: Generate bundle descriptor
+      - name: Refresh patch metadata (version-gated)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION="$(grep -E '^version' gradle.properties | cut -d= -f2 | tr -d '[:space:]')"
-          python3 - "$VERSION" <<'PY'
+          set -euo pipefail
+          VER="$(grep -E '^version' gradle.properties | cut -d= -f2 | tr -d '[:space:]')"
+          LV="$(python3 -c "import json;print(json.load(open('patches-list.json')).get('version',''))" 2>/dev/null || echo '')"
+          BV="$(python3 -c "import json;print(json.load(open('patches-bundle.json')).get('version',''))" 2>/dev/null || echo '')"
+
+          # Gate on version: only refresh when the committed metadata is stale
+          # (i.e. a new version was shipped). This keeps created_at stable
+          # across reruns, so the step is truly idempotent and does not commit
+          # on every push.
+          if [ "$LV" = "$VER" ] && [ "$BV" = "$VER" ]; then
+            echo "Metadata already at $VER — skipping refresh"
+            exit 0
+          fi
+          echo "Refreshing metadata to $VER (list=$LV, bundle=$BV)"
+
+          # Catalog (regenerated from the freshly built .mpp)
+          ./gradlew :patches:generatePatchesList --no-daemon
+
+          # Bundle descriptor (download url + version + timestamp)
+          python3 - "$VER" <<'PY'
           import json, sys, datetime
           version = sys.argv[1]
           payload = {
@@ -74,14 +87,8 @@ jobs:
           open("patches-bundle.json", "w").write(json.dumps(payload, indent=2) + "\n")
           PY
 
-      - name: Commit patch metadata
-        run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet patches-list.json patches-bundle.json; then
-            echo "metadata unchanged — nothing to commit"
-          else
-            git add patches-list.json patches-bundle.json
-            git commit -m "chore: regenerate patch metadata"
-            git push
-          fi
+          git add patches-list.json patches-bundle.json
+          git commit -m "chore: regenerate patch metadata for ${VER}"
+          git push
