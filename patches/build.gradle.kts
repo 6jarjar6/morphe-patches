@@ -2,9 +2,9 @@ group = "app.morphe"
 
 patches {
     about {
-        name = "Bejeweled Classic Patches"
-        description = "Ad-free and other patches for Bejeweled Classic"
-        source = "git@github.com:6jarjar6/morphe-bejeweled-patches.git"
+        name = "6jarjar6 Patches"
+        description = "Morphe patches for the apps I use"
+        source = "git@github.com:6jarjar6/morphe-patches.git"
         author = "Andy"
         contact = "na"
         website = "na"
