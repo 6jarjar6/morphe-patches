@@ -13,15 +13,26 @@ import java.io.File
 import java.net.URLClassLoader
 import java.util.jar.Manifest
 
-fun main() {
-    val patchFiles = setOf(
-        File("build/libs/").listFiles { file ->
-            val fileName = file.name
-            !fileName.contains("javadoc") &&
-                    !fileName.contains("sources") &&
-                    fileName.endsWith(".mpp")
-        }!!.first()
-    )
+fun main(arguments: Array<String>) {
+    // When Gradle passes the project version, select the .mpp for that exact
+    // build. Falling back to the newest version keeps the task usable when run
+    // ad hoc (without a version arg) against a directory holding several .mpp.
+    val candidates = File("build/libs/").listFiles { file ->
+        val fileName = file.name
+        !fileName.contains("javadoc") &&
+                !fileName.contains("sources") &&
+                fileName.endsWith(".mpp")
+    }!!.toList()
+    val wanted = arguments.firstOrNull()
+    val selected = candidates
+        .filter { it.name.startsWith("patches-$wanted.") }
+        .firstOrNull()
+        ?: candidates.maxWith { a, b ->
+            versionCompare(a.name, b.name)
+        }
+        ?: throw IllegalStateException("No .mpp found in build/libs/")
+    val patchFiles = setOf(selected)
+    println("Selecting ${selected.name}")
     val loadedPatches = loadPatchesFromJar(patchFiles)
     val patchClassLoader = URLClassLoader(patchFiles.map { it.toURI().toURL() }.toTypedArray())
     val manifest = patchClassLoader.getResources("META-INF/MANIFEST.MF")
@@ -34,6 +45,25 @@ fun main() {
                 generatePatchList(it, loadedPatches)
             }
     }
+}
+
+/**
+ * Natural ordering of two .mpp file names by their embedded version.
+ * Names look like `patches-1.1.4.mpp`; compares `1.1.4` numerically per
+ * component so 1.10 sorts after 1.9 (a lexicographic sort would not).
+ */
+private fun versionCompare(leftName: String, rightName: String): Int {
+    val left = leftName.substringAfter("patches-", "").substringBeforeLast(".mpp", "")
+    val right = rightName.substringAfter("patches-", "").substringBeforeLast(".mpp", "")
+    val lp = left.split('.')
+    val rp = right.split('.')
+    for (i in 0 until maxOf(lp.size, rp.size)) {
+        val lv = lp.getOrNull(i)?.toIntOrNull() ?: 0
+        val rv = rp.getOrNull(i)?.toIntOrNull() ?: 0
+        val cmp = lv.compareTo(rv)
+        if (cmp != 0) return cmp
+    }
+    return 0
 }
 
 @Suppress("DEPRECATION")
