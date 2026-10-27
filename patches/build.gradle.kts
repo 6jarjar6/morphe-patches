@@ -29,6 +29,9 @@ tasks {
 
         classpath = sourceSets["main"].runtimeClasspath + patchListGeneratorClasspath
         mainClass.set("util.PatchListGeneratorKt")
+        // Pass the current version so the generator selects the exact .mpp for
+        // this build rather than an arbitrary/stale one lingering in build/libs.
+        args(project.version.toString())
     }
 
     // Used by gradle-semantic-release-plugin.
