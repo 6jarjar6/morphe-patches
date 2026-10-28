@@ -69,5 +69,34 @@ val bejeweledCrossPromoRedirect = bytecodePatch(
             "invoke-static {p4}, Lapp/morphe/crosspromo/CrossPromoSilo;->rewrite(Ljava/lang/String;)Ljava/lang/String;"
         )
         ShowWebViewFingerprint.method.addInstruction(1, "move-result-object p4")
+
+        // --------------------------------------------------------------
+        // 3. com.ea.rs.xpromo.Item.launch:()Z — the nimble-Java cross-promo
+        //    panel (the actual "GET STARS!" banner). It builds its own
+        //    ACTION_VIEW intent and startActivity()'s DIRECTLY, so it never
+        //    reaches openURL/showWebView. Two branches, both drawing their
+        //    URL from m_appLinks:
+        //      launch -> m_appLinks.get("appLaunch") -> getInstalledAppPackageName
+        //      store  -> m_appLinks.get("store")    -> Uri.parse -> startActivity
+        //    Rewrite both URLs at the point each is fetched (v1 / v4).
+        //    Inserted from the largest index down so lower indices are stable.
+        // --------------------------------------------------------------
+        val launch = XpromoItemLaunchFingerprint.method
+        // IMPORTANT: rewrite() must sit AFTER the original check-cast, so it
+        // receives a verified String (Map.get yields Object; rewrite(String) is
+        // a String-typed param). Placing it before the check-cast hands rewrite
+        // an unchecked Object, which is a latent verifier failure. Identity
+        // offset is confirmed (request N -> lands at N).
+        // launch branch: orig idx 6 = check-cast v1, idx 7 = getInstalledAppPackageName.
+        // Insert at idx 7 (after check-cast, before getInstalledAppPackageName).
+        launch.addInstruction(7,
+            "invoke-static {v1}, Lapp/morphe/crosspromo/CrossPromoSilo;->rewrite(Ljava/lang/String;)Ljava/lang/String;")
+        launch.addInstruction(8, "move-result-object v1")
+        // store branch: orig idx 32 = check-cast v4, idx 33 = Uri.parse.
+        // After the launch insertion (+2 shift) orig idx 33 (Uri.parse) is now at
+        // idx 35. Insert at idx 35 (after check-cast v4, before Uri.parse).
+        launch.addInstruction(35,
+            "invoke-static {v4}, Lapp/morphe/crosspromo/CrossPromoSilo;->rewrite(Ljava/lang/String;)Ljava/lang/String;")
+        launch.addInstruction(36, "move-result-object v4")
     }
 }

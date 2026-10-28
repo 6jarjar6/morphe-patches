@@ -917,3 +917,30 @@ object ShowWebViewFingerprint : Fingerprint(
     parameters = listOf("J", "Landroid/app/Activity;", "Ljava/lang/String;", "Ljava/lang/String;"),
     filters = listOf(string("activity can't be null"))
 )
+
+/**
+ * com.ea.rs.xpromo.Item.launch:()Z — the nimble-Java cross-promo panel
+ * (the "GET STARS!" banner). Called via `invoke-virtual` (instance method,
+ * `this` = the Item carrying m_appLinks). Unlike the native GluMarketing
+ * button, it builds its OWN `ACTION_VIEW` intent and calls `startActivity`
+ * directly, so it never reaches openURL/showWebView.
+ *
+ * Two branches (both draw URLs from m_appLinks):
+ *   launch: m_appLinks.get("appLaunch") -> getInstalledAppPackageName(pkg)
+ *   store:  m_appLinks.get("store")     -> Uri.parse(url) -> startActivity
+ *
+ * Signature: instance, no params, returns Z. Filters anchor on the
+ * characteristic "appLaunch"/"store" string keys and the VIEW action.
+ */
+object XpromoItemLaunchFingerprint : Fingerprint(
+    definingClass = "Lcom/ea/rs/xpromo/" + "Item;",
+    name = "launch",
+    isStatic = false,
+    returnType = "Z",
+    parameters = emptyList(),
+    filters = listOf(
+        string("appLaunch"),
+        string("android.intent.action.VIEW"),
+        string("store")
+    )
+)
