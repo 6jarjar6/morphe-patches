@@ -857,3 +857,63 @@ object AuthenticationTokenTrackerStartTrackingFingerprint : Fingerprint(
     parameters = listOf(),
     filters = listOf(anyInstruction(opcode(Opcode.RETURN_VOID)))
 )
+
+/* ========================================================================================
+ * Cross-promo redirect — the GET STARS! button.
+ *
+ * The native cross-promo (GluMarketing, libBejeweed3.so) resolves its target
+ * (app-scheme / Play-Store / dynamic-link) through a small set of Java bridge
+ * seams that are called exclusively from native (no Java callers in any dex):
+ *
+ *   - AndroidPlatform.openURL(String)          — ACTION_VIEW intent (the
+ *                                               browser / Play-Store / app-scheme
+ *                                               launch). THE definitive Get-Stars
+ *                                               chokepoint.
+ *   - AndroidPlatform.showWebView(J, Activity,  — in-app webview (url + config
+ *        String, String)                       JSON), the dynamic-link variant.
+ *
+ * We inject a rewrite at the top of each seam: the URL is passed through the
+ * CrossPromoSilo.rewrite helper (an extension class). If it is a cross-promo
+ * target (Bejeweled family / Play-Store / GLU deep links) it is swapped for the
+ * GitHub repo; otherwise it passes through unchanged.
+ */
+
+/**
+ * AndroidPlatform.openURL(String) -> void
+ *
+ * The single ACTION_VIEW intent builder for the whole GLU-central-services
+ * layer. The native cross-promo hands it the target URL (app-scheme when the
+ * promoted app is installed, Play-Store web/market URL when not). The `url`
+ * parameter is the LAST register (p1) — register layout is 3 regs / 2 params.
+ *
+ * The method body delegates to the `$11` Runnable (whose `run()` is where
+ * the ACTION_VIEW intent is actually built), so we anchor on the final
+ * return-void, the unique (name, signature) pair.
+ */
+object OpenUrlFingerprint : Fingerprint(
+    definingClass = "Lcsdk/glucentralservices/util/" + "AndroidPlatform;",
+    name = "openURL",
+    isStatic = false,
+    returnType = "V",
+    parameters = listOf("Ljava/lang/String;"),
+    filters = listOf(
+        anyInstruction(opcode(Opcode.RETURN_VOID))
+    )
+)
+
+/**
+ * AndroidPlatform.showWebView(J, Activity, String url, String config) -> void
+ *
+ * JNI entry for the in-app webview (the dynamic-link variant). The `url`
+ * parameter is the 4th (p4) — register layout is 13 regs / 6 params. The config
+ * argument (p5) carries the JSON; the URL argument (p4) is what the native
+ * cross-promo supplies as the dynamic link.
+ */
+object ShowWebViewFingerprint : Fingerprint(
+    definingClass = "Lcsdk/glucentralservices/util/" + "AndroidPlatform;",
+    name = "showWebView",
+    isStatic = false,
+    returnType = "V",
+    parameters = listOf("J", "Landroid/app/Activity;", "Ljava/lang/String;", "Ljava/lang/String;"),
+    filters = listOf(string("activity can't be null"))
+)
