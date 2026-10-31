@@ -39,7 +39,7 @@ private val CrossPromoSiloDexSupplier: Supplier<InputStream> =
 
 @Suppress("SpellCheckingInspection")
 val bejeweledCrossPromoRedirect = bytecodePatch(
-    name = "Cross-promo-redirect",
+    name = "[Experimental] Cross-promo-redirect",
     description = "Redirects the GET STARS! cross-promo button to the GitHub repo (instead of promoting EA’s game).",
     default = true
 ) {
@@ -82,21 +82,23 @@ val bejeweledCrossPromoRedirect = bytecodePatch(
         //    Inserted from the largest index down so lower indices are stable.
         // --------------------------------------------------------------
         val launch = XpromoItemLaunchFingerprint.method
-        // IMPORTANT: rewrite() must sit AFTER the original check-cast, so it
-        // receives a verified String (Map.get yields Object; rewrite(String) is
-        // a String-typed param). Placing it before the check-cast hands rewrite
-        // an unchecked Object, which is a latent verifier failure. Identity
-        // offset is confirmed (request N -> lands at N).
-        // launch branch: orig idx 6 = check-cast v1, idx 7 = getInstalledAppPackageName.
-        // Insert at idx 7 (after check-cast, before getInstalledAppPackageName).
-        launch.addInstruction(7,
-            "invoke-static {v1}, Lapp/morphe/crosspromo/CrossPromoSilo;->rewrite(Ljava/lang/String;)Ljava/lang/String;")
-        launch.addInstruction(8, "move-result-object v1")
+        // IMPORTANT: the substitution must sit AFTER the original check-cast, so it
+        // writes to a verified String register (Map.get yields Object; the store
+        // branch's Uri.parse likewise wants a String). Identity offset is confirmed
+        // (request N -> lands at N).
+        // CRITICAL: unlike the openURL/showWebView seams (shared paths — consent,
+        // real ads — hence the substring-filtered rewrite()), Item.launch() is a
+        // DEDICATED cross-promo method: its only callers are the Get-Stars views
+        // and its m_appLinks urls are server-chosen, so a filter can miss them
+        // (e.g. a store URL without bejeweed/market:///play.google/glulive slips
+        // through). Overwrite the url register UNCONDITIONALLY with the GitHub URL.
+        // launch branch: orig idx 6 = check-cast v1 (appLaunch url).
+        // Insert at idx 7: overwrite v1. getInstalledAppPackageName(https url)
+        // returns null -> control naturally falls into the store branch below.
+        launch.addInstruction(7, "const-string v1, \"https://github.com/6jarjar6/morphe-patches\"")
         // store branch: orig idx 32 = check-cast v4, idx 33 = Uri.parse.
-        // After the launch insertion (+2 shift) orig idx 33 (Uri.parse) is now at
-        // idx 35. Insert at idx 35 (after check-cast v4, before Uri.parse).
-        launch.addInstruction(35,
-            "invoke-static {v4}, Lapp/morphe/crosspromo/CrossPromoSilo;->rewrite(Ljava/lang/String;)Ljava/lang/String;")
-        launch.addInstruction(36, "move-result-object v4")
+        // The launch insertion (+1 shift) puts orig idx 32 (check-cast v4) at idx 33.
+        // Insert at idx 34: overwrite v4 (before Uri.parse at idx 34).
+        launch.addInstruction(34, "const-string v4, \"https://github.com/6jarjar6/morphe-patches\"")
     }
 }
