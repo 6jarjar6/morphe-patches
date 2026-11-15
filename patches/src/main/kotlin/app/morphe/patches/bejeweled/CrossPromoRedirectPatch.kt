@@ -3,6 +3,7 @@ package app.morphe.patches.bejeweled
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patcher.util.getFreeRegisterProvider
 import app.morphe.patches.shared.Constants
 import java.io.ByteArrayInputStream
 import java.io.InputStream
@@ -151,5 +152,42 @@ val bejeweledCrossPromoRedirect = bytecodePatch(
         )
         // step D: store URL overwrite (before Uri.parse).
         launch.addInstruction(41, "const-string v4, \"https://github.com/6jarjar6/morphe-patches\"")
+
+        // ======================================================================
+        // 4. com.ea.blast.SystemAndroidDelegate.IntentView(String) -> Z
+        //    The Blast engine's native->Java bridge. The native game passes
+        //    ANY url (incl. "market://details?id=com.ea.gp.bejeweldedskies")
+        //    and this builds Intent(ACTION_VIEW, Uri.parse(url)) + startActivity
+        //    directly, bypassing openURL/showWebView/Item.launch. This is the
+        //    "Get Stars" path the v1.2.3 canary missed.
+        //    Layout: registers=4, ins=2 (p0=this, p1=url, v0=scratch Intent).
+        //    Body (original):
+        //      0 new-instance v0 (Intent)
+        //      1 const-string v1, "android.intent.action.VIEW"
+        //      2 invoke-static {p1}, Uri.parse
+        //      3 move-result-object p1
+        //      4 invoke-direct {v0, v1, p1}, Intent.<init>
+        //      5 iget-object p1, mMainActivity
+        //      6 invoke-virtual {p1, v0}, MainActivity.startActivity
+        //      7 const/4 p1, 1
+        //      8 return p1
+        //      :catch 9 const/4 p1, 0  10 return p1
+        //    No free register for the probe id — grab one via
+        //    getFreeRegisterProvider(0,1) (bumps .registers 4 -> 5).
+        //    Insert at index 0 (before new-instance): probe + rewrite of p1.
+        //    After rewrite, orig Uri.parse(p1) sees the rewritten URL.
+        // ======================================================================
+        val iv = SystemAndroidDelegateIntentViewFingerprint.method
+        iv.getFreeRegisterProvider(0, 1).let { rp ->
+            val probeId = rp.getFreeRegister()
+            check(probeId != null) { "Could not get free register for IntentView canary" }
+            iv.addInstructions(
+                0,
+                "const/4 v$probeId, 5\n" +
+                    "invoke-static {p1, v$probeId}, $SIL_PROBE\n" +
+                    "invoke-static {p1}, $SIL_REWRITE\n" +
+                    "move-result-object p1"
+            )
+        }
     }
 }
