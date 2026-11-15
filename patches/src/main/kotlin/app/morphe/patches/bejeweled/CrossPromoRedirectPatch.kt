@@ -2,6 +2,7 @@ package app.morphe.patches.bejeweled
 
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patcher.util.returnEarly
 import app.morphe.patches.shared.Constants
 import java.io.ByteArrayInputStream
 import java.io.InputStream
@@ -34,6 +35,9 @@ private val CrossPromoSiloDexSupplier: Supplier<InputStream> =
 
 private const val SIL_REWRITE = "Lapp/morphe/crosspromo/CrossPromoSilo;->rewrite(Ljava/lang/String;)Ljava/lang/String;"
 
+/** Replacement label for the cross-promo buttons (was server-pushed "GET STARS!"). */
+private const val PROMO_BUTTON_LABEL = "GitHub"
+
 @Suppress("SpellCheckingInspection")
 val bejeweledCrossPromoRedirect = bytecodePatch(
     name = "[Experimental] Cross-promo-redirect",
@@ -60,5 +64,12 @@ val bejeweledCrossPromoRedirect = bytecodePatch(
             "invoke-static {p1}, $SIL_REWRITE\n" +
                 "move-result-object p1"
         )
+
+        // =====================================================================
+        // com.ea.rs.xpromo.Item.getTitle() -> String — the button label
+        // (server-pushed "GET STARS!"). Unconditional: Item is cross-promo
+        // exclusive.
+        // =====================================================================
+        XpromoItemTitleFingerprint.method.returnEarly(PROMO_BUTTON_LABEL)
     }
 }
