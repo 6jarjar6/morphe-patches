@@ -877,3 +877,26 @@ object SystemAndroidDelegateIntentViewFingerprint : Fingerprint(
         string("android.intent.action.VIEW")
     )
 )
+
+/**
+ * com.ea.rs.xpromo.Item.getTitle() -> String
+ *
+ * Returns the server-pushed m_title — the label shown on the cross-promo
+ * buttons ("GET STARS!"). The button reads it via XPromoRefreshableButton$2 /
+ * RefreshableButton$2 (the only callers in the dex); Item is cross-promo
+ * exclusive, so the patch is unconditional: returnEarly(a constant).
+ *
+ * Body: iget-object v0, p0, m_title; return-object v0 — no const-strings,
+ * so the filter anchors on the RETURN_OBJECT opcode (the method's only
+ * return instruction).
+ */
+object XpromoItemTitleFingerprint : Fingerprint(
+    definingClass = "Lcom/ea/rs/xpromo/" + "Item;",
+    name = "getTitle",
+    isStatic = false,
+    returnType = "Ljava/lang/String;",
+    parameters = emptyList(),
+    filters = listOf(
+        anyInstruction(opcode(Opcode.RETURN_OBJECT))
+    )
+)
