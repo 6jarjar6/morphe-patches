@@ -2,7 +2,6 @@ package app.morphe.patches.bejeweled
 
 import app.morphe.patcher.patch.rawResourcePatch
 import app.morphe.patches.shared.Constants
-import java.io.File
 
 /**
  * Cross-promo button-text patch for Bejeweled Classic.
@@ -42,7 +41,7 @@ val bejeweledObbButtonText = rawResourcePatch(
         }
 
         val data = obb.readBytes()
-        val count = replaceAll(data, original, replacement)
+        val count = replaceInPlace(data, original, replacement)
         if (count > 0) {
             obb.writeBytes(data)
         }
@@ -50,7 +49,7 @@ val bejeweledObbButtonText = rawResourcePatch(
 }
 
 /** Same-length byte replacement (no shift, size preserved). Returns match count. */
-private fun replaceAll(src: ByteArray, find: ByteArray, repl: ByteArray): Int {
+private fun replaceInPlace(src: ByteArray, find: ByteArray, repl: ByteArray): Int {
     check(find.size == repl.size) { "find/repl must be same length" }
     var idx = 0
     var count = 0
